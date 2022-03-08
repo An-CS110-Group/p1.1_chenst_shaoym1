@@ -31,4 +31,17 @@ int readline(FILE *in, char *target);
 
 int writeline(FILE *out, const char *target);
 
+/*  int stringToBinaryInt(const char *instruction):
+ *
+ *  Input:
+ *      const char *instruction: Valid, readable with a 32-bit instruction.
+ *
+ *  Output:
+ *      long:
+ *          0: When some input values are invalid or target cannot be converted.
+ *          result: In most usual cases.
+ */
+
+unsigned long stringToBinaryInt(const char *instruction);
+
 #endif

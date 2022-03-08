@@ -31,3 +31,12 @@ int writeline(FILE *out, const char *target) {
 	/* 1.4 Return 0 when nothing unusual happens */
 	return 0;
 }
+
+unsigned long stringToBinaryInt(const char *instruction) {
+
+	/* 1.1 Check validation of input object */
+	if (instruction == NULL) { return 0; }
+
+	/* 1.2 Perform string-to-long transformation and return */
+	return strtoul(instruction, NULL, 2);
+}
