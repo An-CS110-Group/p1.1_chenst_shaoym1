@@ -1,6 +1,10 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+/* TODO: It may be better if I return an int indicating the whole line.
+ * Call stringToBinaryNumber.
+ * */
+
 /*  int readline(FILE *in, char *target):
  *
  *  Input:
@@ -14,6 +18,10 @@
  *          2: The file has come to an end.
  */
 int readline(FILE *in, char *target);
+
+/* TODO: We shall write from unsigned long instead of char*.
+ * There should be different cases (16 / 32).
+ * */
 
 /*  int writeline(FILE *out, const char *target):
  *
@@ -39,7 +47,7 @@ int writeline(FILE *out, const char *target);
  *          0: When some input values are invalid or target cannot be converted.
  *          result: In most usual cases.
  */
-unsigned long stringToBinaryInt(const char *instruction);
+unsigned long stringToBinaryNumber(const char *instruction);
 
 /*  short getOpcode(long instruction):
  *
@@ -48,10 +56,35 @@ unsigned long stringToBinaryInt(const char *instruction);
  *
  *  Output:
  *      short:
- *          result: An 8-bit number.
+ *          result: An 7-bit number.
  */
 short getOpcode(unsigned long instruction);
 
+/*  short getFunct3(unsigned long instruction):
+ *
+ *  Input:
+ *      long instruction: A 32-bit binary number.
+ *
+ *  Output:
+ *      short:
+ *          result: An 3-bit number.
+ */
+short getFunct3(unsigned long instruction);
+
+/*  short getFunct7(unsigned long instruction):
+ *
+ *  Input:
+ *      long instruction: A 32-bit binary number.
+ *
+ *  Output:
+ *      short:
+ *          result: An 7-bit number.
+ */
+short getFunct7(unsigned long instruction);
+
+/* Wondering if I should return all details in this function.
+ * Many helper function will be needed.
+ * */
 int inCompressAbleList(unsigned long instruction);
 
 int isCompressAble(unsigned long instruction);

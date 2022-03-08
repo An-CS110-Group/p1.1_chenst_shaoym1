@@ -34,7 +34,7 @@ int writeline(FILE *out, const char *target) {
 	return 0;
 }
 
-unsigned long stringToBinaryInt(const char *instruction) {
+unsigned long stringToBinaryNumber(const char *instruction) {
 
 	/* 3.1 Check validation of input object */
 	if (instruction == NULL) { return 0; }
