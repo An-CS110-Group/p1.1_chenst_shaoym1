@@ -13,7 +13,6 @@
  *          1: When some input values are invalid.
  *          2: The file has come to an end.
  */
-
 int readline(FILE *in, char *target);
 
 /*  int writeline(FILE *out, const char *target):
@@ -28,7 +27,6 @@ int readline(FILE *in, char *target);
  *          1: When some input values are invalid.
  *          2: The function fputs() has encountered unprecedented failure.
  */
-
 int writeline(FILE *out, const char *target);
 
 /*  int stringToBinaryInt(const char *instruction):
@@ -41,7 +39,21 @@ int writeline(FILE *out, const char *target);
  *          0: When some input values are invalid or target cannot be converted.
  *          result: In most usual cases.
  */
-
 unsigned long stringToBinaryInt(const char *instruction);
+
+/*  short getOpcode(long instruction):
+ *
+ *  Input:
+ *      long instruction: A 32-bit binary number.
+ *
+ *  Output:
+ *      short:
+ *          result: An 8-bit number.
+ */
+short getOpcode(unsigned long instruction);
+
+int inCompressAbleList(unsigned long instruction);
+
+int isCompressAble(unsigned long instruction);
 
 #endif
