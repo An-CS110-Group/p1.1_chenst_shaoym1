@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 /*  Project 1.1: RISC-V instructions to RISC-V compressed instructions in C89.
     The following is the starter code provided for you. To finish the task, you 
     should define and implement your own functions in translator.c, compression.c, 
@@ -81,7 +80,6 @@ int main(int argc, char **argv){
 
     return 0;
 }
-=======
 /*  Project 1.1: RISC-V instructions to RISC-V compressed instructions in C89.
     The following is the starter code provided for you. To finish the task, you 
     should define and implement your own functions in translator.c, compression.c, 
@@ -168,4 +166,3 @@ int main(int argc, char **argv) {
 
 	return 0;
 }
->>>>>>> bc4bf53266e0a67fe1386d9a5d53f73fd811f33c

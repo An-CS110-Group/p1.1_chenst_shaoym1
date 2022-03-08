@@ -1,11 +1,3 @@
-<<<<<<< HEAD
-#ifndef UTILS_H
-#define UTILS_H
-
-/* Your code here... */
-
-#endif
-=======
 #ifndef UTILS_H
 #define UTILS_H
 
@@ -40,4 +32,3 @@ int readline(FILE *in, char *target);
 int writeline(FILE *out, const char *target);
 
 #endif
->>>>>>> bc4bf53266e0a67fe1386d9a5d53f73fd811f33c

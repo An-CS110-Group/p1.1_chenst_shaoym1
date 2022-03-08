@@ -1,14 +1,3 @@
-<<<<<<< HEAD
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include "utils.h"
-
-/* Your code here... */
-
- 
-=======
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -42,4 +31,3 @@ int writeline(FILE *out, const char *target) {
 	/* 1.4 Return 0 when nothing unusual happens */
 	return 0;
 }
->>>>>>> bc4bf53266e0a67fe1386d9a5d53f73fd811f33c
