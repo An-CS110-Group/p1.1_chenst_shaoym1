@@ -28,7 +28,7 @@ typedef struct Instruction {
 	unsigned long imm;
 } Instruction;
 
-/*  unsigned long readline(FILE *in):
+/*  int readline(FILE *in, unsigned long *target):
  *
  *  Input:
  *      FILE *in: Valid readable filestream.
@@ -36,14 +36,13 @@ typedef struct Instruction {
  *
  *  Output:
  *      int:
- *          0: When something unusual happened.
+ *          0: When nothing unusual happened.
  *          1: When some input values are invalid.
  *          2: When failed to read from FILE *in.
  *      unsigned long *target
  *          0: When something unusual happens.
  *          result: In most usual cases.
  */
-int readline(FILE *in, unsigned long *target);
 
 /*  int writeline(FILE *out, unsigned long target, int length):
  *
@@ -71,7 +70,6 @@ int writeline(FILE *out, unsigned long target, int length);
  *          0: When some input values are invalid or target cannot be converted.
  *          result: In most usual cases.
  */
-static unsigned long stringToBinaryNumber(const char *instruction);
 
 /*  short getOpcode(long instruction):
  *
@@ -82,7 +80,6 @@ static unsigned long stringToBinaryNumber(const char *instruction);
  *      short:
  *          result: An 7-bit number.
  */
-static short getOpcode(unsigned long instruction);
 
 /*  short getFunct3(unsigned long instruction):
  *
@@ -93,7 +90,6 @@ static short getOpcode(unsigned long instruction);
  *      short:
  *          result: An 3-bit number.
  */
-static short getFunct3(unsigned long instruction);
 
 /*  short getFunct7(unsigned long instruction):
  *
@@ -104,7 +100,6 @@ static short getFunct3(unsigned long instruction);
  *      short:
  *          result: An 7-bit number.
  */
-static short getFunct7(unsigned long instruction);
 
 /*  int inCompressAbleList(unsigned long instruction):
  *
@@ -116,7 +111,6 @@ static short getFunct7(unsigned long instruction);
  *          0: When the instruction cannot be compressed.
  *          1: When the instruction can be compressed.
  */
-static int isInCompressAbleList(unsigned long instruction);
 
 /*  InsType getType(unsigned long instruction):
  *
@@ -127,7 +121,6 @@ static int isInCompressAbleList(unsigned long instruction);
  *      InsType:
  *          result: The type of instruction.
  */
-static InsType getType(unsigned long instruction);
 
 /*  short getRD(unsigned long instruction):
  *
@@ -138,7 +131,6 @@ static InsType getType(unsigned long instruction);
  *      short:
  *          result: An 5-bit number.
  */
-static short getRD(unsigned long instruction);
 
 /*  short getRS1(unsigned long instruction):
  *
@@ -149,7 +141,6 @@ static short getRD(unsigned long instruction);
  *      short:
  *          result: An 5-bit number.
  */
-static short getRS1(unsigned long instruction);
 
 /*  short getRS2(unsigned long instruction):
  *
@@ -160,7 +151,6 @@ static short getRS1(unsigned long instruction);
  *      short:
  *          result: An 5-bit number.
  */
-static short getRS2(unsigned long instruction);
 
 /*  unsigned long getImm(unsigned long instruction):
  *
@@ -171,17 +161,26 @@ static short getRS2(unsigned long instruction);
  *      unsigned long:
  *          result: Imm (if exists) in the instruction.
  */
-static unsigned long getImm(unsigned long instruction);
 
-/*  Instruction *parse(unsigned long instruction):
+/*  void parse(unsigned long instruction):
  *
  *  Input:
  *      unsigned long instruction: A 32-bit binary number.
  *
  *  Output:
- *      Instruction:
+ *      Instruction* target:
  *          result: Detailed information about the instruction.
  */
-Instruction *parse(unsigned long instruction);
+
+/*  Instruction **readFromFile(FILE *in):
+ *
+ *  Input:
+ *      FILE *in: Valid readable filestream.
+ *
+ *  Output:
+ *      Instruction **:
+ *          result: An array of original instructions with length 60.
+ */
+Instruction **readFromFile(FILE *in);
 
 #endif

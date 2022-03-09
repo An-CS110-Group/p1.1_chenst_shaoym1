@@ -4,52 +4,51 @@
 
 #include "utils.h"
 
+static unsigned long stringToBinaryNumber(const char *instruction) {
 
-int readline(FILE *in, unsigned long *returnValue) {
+	/* 1.1 Check validation of input object */
+	if (instruction == NULL) { return 0; }
+
+	/* 1.2 Perform string-to-long transformation and return */
+	return strtoul(instruction, NULL, 2);
+}
+
+static int readline(FILE *in, unsigned long *returnValue) {
 	char temp[33];
 
-	/* 1.1 Check validation of input objects */
+	/* 2.1 Check validation of input objects */
 	if (in == NULL | returnValue == NULL) { return 1; }
 
-	/* 1.2 Read in a line of original file and check if we've met the end */
+	/* 2.2 Read in a line of original file and check if we've met the end */
 	if (fgets(temp, 35, in) == NULL) { return 2; }
 
-	/* 1.3 Get rid of '\n' */
+	/* 2.3 Get rid of '\n' */
 	temp[32] = 0;
 
-	/* 1.4 Return the converted number */
+	/* 2.4 Return the converted number */
 	*returnValue = stringToBinaryNumber(temp);
 	return 0;
 }
 
 int writeline(FILE *out, unsigned long target, int length) {
-	/* 2.1 Check validation of input objects */
+	/* 3.1 Check validation of input objects */
 	if (out == NULL) { return 1; }
 	if (length != 16 && length != 32) { return 2; }
 
-	/* 2.2 Write into the file */
+	/* 3.2 Write into the file */
 	{
 		int i;
 		for (i = length - 1; i >= 0; --i) {
-			/* 2.3 0 has ASCII code 48 */
+			/* 3.3 0 has ASCII code 48 */
 			if (fputc((((1 << i) & target) != 0) + 48, out) == EOF) return 3;
 		}
 	}
 
-	/* 2.4 Newline after successfully written */
+	/* 3.4 Newline after successfully written */
 	if (fputc('\n', out) == EOF) { return 3; }
 
-	/* 2.5 Return 0 when nothing unusual happens */
+	/* 3.5 Return 0 when nothing unusual happens */
 	return 0;
-}
-
-static unsigned long stringToBinaryNumber(const char *instruction) {
-
-	/* 3.1 Check validation of input object */
-	if (instruction == NULL) { return 0; }
-
-	/* 3.2 Perform string-to-long transformation and return */
-	return strtoul(instruction, NULL, 2);
 }
 
 static short getOpcode(unsigned long instruction) {
@@ -171,6 +170,7 @@ static InsType getType(unsigned long instruction) {
 			return UJ;
 			/* 8.8 No such case */
 		default:
+			printf("Error getting type!");
 			exit(0);
 	}
 }
@@ -204,40 +204,65 @@ static unsigned long getImm(unsigned long instruction) {
 			return (((instruction >> 25) << 5) | ((instruction >> 7) & 0x1F));
 		case SB:
 			/* 12.5 Imm lies in 31 ~ 25 and 11 ~ 7 in an SB-type instruction */
-			return (((instruction >> 31) << 12) | ((instruction & 0x80) << 11) | ((instruction & 0x7E000000) >> 20) | ((instruction & 0xF00) >> 7));
+			return (((instruction >> 31) << 12) | ((instruction & 0x80) << 11) | ((instruction & 0x7E000000) >> 20) |
+			        ((instruction & 0xF00) >> 7));
 		case U:
 			/* 12.6 Imm lies in 31 ~ 12 in a U-type instruction */
 			return ((instruction >> 12) << 12);
 			break;
 		case UJ:
 			/* 12.7 Imm lies in 31 ~ 12 in a U-type instruction */
-			return (((instruction & 0x80000000) >> 11) | (instruction & 0xFF000) | ((instruction & 0x100000) >> 9) | (instruction & 0x3FF00000) >> 19);
+			return (((instruction & 0x80000000) >> 11) | (instruction & 0xFF000) | ((instruction & 0x100000) >> 9) |
+			        (instruction & 0x3FF00000) >> 19);
 	}
 }
 
-Instruction *parse(unsigned long instruction) {
-	/* 13.1 Create a new struct */
-	Instruction *i = (Instruction *) malloc(sizeof(Instruction));
+static void parse(unsigned long instruction, Instruction *target) {
+	/* 13.1 Check validation */
+	if (target == NULL) return;
 	/* 13.2 Original value */
-	i->originalValue = instruction;
-	/* 13.3 Whether it can be compressed*/
-	i->inCompressAbleList = isInCompressAbleList(instruction); /* Note: Not guaranteed */
+	target->originalValue = instruction;
+	/* 13.3 Whether it can be compressed */
+	target->inCompressAbleList = isInCompressAbleList(instruction); /* Note: Not guaranteed */
 	/* 13.4 Type of instruction */
-	i->type = getType(instruction);
+	target->type = getType(instruction);
 	/* 13.5 Opcode */
-	i->opcode = getOpcode(instruction);
+	target->opcode = getOpcode(instruction);
 	/* 13.6 Funct7 */
-	i->funct7 = getFunct7(instruction);
-	/* 13.7 Funct3*/
-	i->funct3 = getFunct3(instruction);
+	target->funct7 = getFunct7(instruction);
+	/* 13.7 Funct3 */
+	target->funct3 = getFunct3(instruction);
 	/* 13.8 rd */
-	i->rd = getRD(instruction);
+	target->rd = getRD(instruction);
 	/* 13.9 rs1 */
-	i->rs1 = getRS1(instruction);
+	target->rs1 = getRS1(instruction);
 	/* 13.10 rs2 */
-	i->rs2 = getRS2(instruction);
+	target->rs2 = getRS2(instruction);
 	/* 13.11 imm */
-	i->imm = getImm(instruction);
-	/* 13.12 Return instruction */
-	return i;
+	target->imm = getImm(instruction);
+}
+
+Instruction **readFromFile(FILE *in) {
+	int i;
+	/* 14.1 Allocate spce for pointers */
+	Instruction **target = malloc(sizeof(Instruction *) * 60);
+	/* 14.2 Read in all data with a single loop */
+	unsigned long *num = malloc(sizeof(unsigned long));
+	for (i = 0; i < 60; ++i) {
+		Instruction *temp = malloc(sizeof(Instruction));
+		/* 14.3 readline() has non-zero return value if something unusual happens */
+		if (!readline(in, num)) {
+			parse(*num, temp);
+			target[i] = temp;
+			continue;
+		}
+		/* 14.4 Finish if nothing else is read */
+		free(temp);
+		break;
+	}
+
+	/* 14.5 Free all space allocated */
+	free(num);
+	/* 14.6 Return instructions read */
+	return target;
 }

@@ -54,11 +54,9 @@ int translate(const char *in, const char *out) {
 		if (open_files(&input, &output, in, out) != 0) exit(1);
 		/* Test functions over here! */
 		{
-			unsigned long *hello = malloc(sizeof(unsigned long));
-			while (!readline(input, hello)) {
-				printf("%lu\n", *hello);
-				writeline(output, *hello, 32);
-			}
+			/* Usage example:
+		     *      Instruction** OriginalFile = readFromFile(input);
+			*/
 		}
 		/* Done testing */
 		close_files(&input, &output);
