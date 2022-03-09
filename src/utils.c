@@ -43,7 +43,7 @@ int writeline(FILE *out, unsigned long target, int length) {
 	return 0;
 }
 
-unsigned long stringToBinaryNumber(const char *instruction) {
+static unsigned long stringToBinaryNumber(const char *instruction) {
 
 	/* 3.1 Check validation of input object */
 	if (instruction == NULL) { return 0; }
@@ -52,22 +52,22 @@ unsigned long stringToBinaryNumber(const char *instruction) {
 	return strtoul(instruction, NULL, 2);
 }
 
-short getOpcode(unsigned long instruction) {
+static short getOpcode(unsigned long instruction) {
 	/* 4.1 For any kind of instruction, opcode lies in the last 7 digits */
 	return (short) (instruction & 0x7F);
 }
 
-short getFunct3(unsigned long instruction) {
+static short getFunct3(unsigned long instruction) {
 	/* 5.1 For any kind of instruction that Funct3 code exists, it lies in digits 14 ~ 12 */
 	return (short) ((instruction >> 12) & 0x7);
 }
 
-short getFunct7(unsigned long instruction) {
+static short getFunct7(unsigned long instruction) {
 	/* 6.1 For any kind of instruction that Funct7 code exists, it lies in digits 31 ~ 25*/
 	return (short) ((instruction >> 25) & 0x7F);
 }
 
-int inCompressAbleList(unsigned long instruction) {
+static int isInCompressAbleList(unsigned long instruction) {
 	switch (getOpcode(instruction)) {
 			/* 7.1 I-type */
 		case 0x67:
@@ -142,7 +142,7 @@ int inCompressAbleList(unsigned long instruction) {
 	return 0;
 }
 
-InsType getType(unsigned long instruction) {
+static InsType getType(unsigned long instruction) {
 	/* 8.1 Get the opcode of the instruction, a certain opcode can decide the type of instruction*/
 	switch (getOpcode(instruction)) {
 			/* 8.2 I-type */
@@ -175,22 +175,22 @@ InsType getType(unsigned long instruction) {
 	}
 }
 
-short getRD(unsigned long instruction) {
+static short getRD(unsigned long instruction) {
 	/* 9.1 For any kind of instruction that rd code exists, it lies in digits 11 ~ 7 */
 	return (short) ((instruction >> 7) & 0x1F);
 }
 
-short getRS1(unsigned long instruction) {
+static short getRS1(unsigned long instruction) {
 	/* 10.1 For any kind of instruction that rd code exists, it lies in digits 19 ~ 15 */
 	return (short) ((instruction >> 15) & 0x1F);
 }
 
-short getRS2(unsigned long instruction) {
+static short getRS2(unsigned long instruction) {
 	/* 11.1 For any kind of instruction that rd code exists, it lies in digits 24 ~ 20 */
 	return (short) ((instruction >> 20) & 0x1F);
 }
 
-unsigned long getImm(unsigned long instruction) {
+static unsigned long getImm(unsigned long instruction) {
 	/* 12.1 Get the type of instruction */
 	switch (getType(instruction)) {
 		case R:
@@ -221,7 +221,7 @@ Instruction *parse(unsigned long instruction) {
 	/* 13.2 Original value */
 	i->originalValue = instruction;
 	/* 13.3 Whether it can be compressed*/
-	i->isCompressAble = inCompressAbleList(instruction); /* TODO: Not guaranteed */
+	i->inCompressAbleList = isInCompressAbleList(instruction); /* Note: Not guaranteed */
 	/* 13.4 Type of instruction */
 	i->type = getType(instruction);
 	/* 13.5 Opcode */

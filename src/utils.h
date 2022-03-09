@@ -9,7 +9,7 @@ typedef struct Instruction {
 	/* Original value of instruction */
 	unsigned long originalValue;
 	/* Whether the instruction can be compressed */
-	int isCompressAble;
+	int inCompressAbleList;
 	/* The type of instruction */
 	InsType type;
 	/* opcode */
@@ -71,7 +71,7 @@ int writeline(FILE *out, unsigned long target, int length);
  *          0: When some input values are invalid or target cannot be converted.
  *          result: In most usual cases.
  */
-unsigned long stringToBinaryNumber(const char *instruction);
+static unsigned long stringToBinaryNumber(const char *instruction);
 
 /*  short getOpcode(long instruction):
  *
@@ -82,7 +82,7 @@ unsigned long stringToBinaryNumber(const char *instruction);
  *      short:
  *          result: An 7-bit number.
  */
-short getOpcode(unsigned long instruction);
+static short getOpcode(unsigned long instruction);
 
 /*  short getFunct3(unsigned long instruction):
  *
@@ -93,7 +93,7 @@ short getOpcode(unsigned long instruction);
  *      short:
  *          result: An 3-bit number.
  */
-short getFunct3(unsigned long instruction);
+static short getFunct3(unsigned long instruction);
 
 /*  short getFunct7(unsigned long instruction):
  *
@@ -104,7 +104,7 @@ short getFunct3(unsigned long instruction);
  *      short:
  *          result: An 7-bit number.
  */
-short getFunct7(unsigned long instruction);
+static short getFunct7(unsigned long instruction);
 
 /*  int inCompressAbleList(unsigned long instruction):
  *
@@ -116,7 +116,7 @@ short getFunct7(unsigned long instruction);
  *          0: When the instruction cannot be compressed.
  *          1: When the instruction can be compressed.
  */
-int inCompressAbleList(unsigned long instruction);
+static int isInCompressAbleList(unsigned long instruction);
 
 /*  InsType getType(unsigned long instruction):
  *
@@ -127,7 +127,7 @@ int inCompressAbleList(unsigned long instruction);
  *      InsType:
  *          result: The type of instruction.
  */
-InsType getType(unsigned long instruction);
+static InsType getType(unsigned long instruction);
 
 /*  short getRD(unsigned long instruction):
  *
@@ -138,7 +138,7 @@ InsType getType(unsigned long instruction);
  *      short:
  *          result: An 5-bit number.
  */
-short getRD(unsigned long instruction);
+static short getRD(unsigned long instruction);
 
 /*  short getRS1(unsigned long instruction):
  *
@@ -149,7 +149,7 @@ short getRD(unsigned long instruction);
  *      short:
  *          result: An 5-bit number.
  */
-short getRS1(unsigned long instruction);
+static short getRS1(unsigned long instruction);
 
 /*  short getRS2(unsigned long instruction):
  *
@@ -160,7 +160,7 @@ short getRS1(unsigned long instruction);
  *      short:
  *          result: An 5-bit number.
  */
-short getRS2(unsigned long instruction);
+static short getRS2(unsigned long instruction);
 
 /*  unsigned long getImm(unsigned long instruction):
  *
@@ -171,7 +171,7 @@ short getRS2(unsigned long instruction);
  *      unsigned long:
  *          result: Imm (if exists) in the instruction.
  */
-unsigned long getImm(unsigned long instruction);
+static unsigned long getImm(unsigned long instruction);
 
 /*  Instruction *parse(unsigned long instruction):
  *
