@@ -54,10 +54,10 @@ int translate(const char *in, const char *out) {
 		if (open_files(&input, &output, in, out) != 0) exit(1);
 		/* Test functions over here! */
 		{
-			char *hello = malloc(40);
+			unsigned long *hello = malloc(sizeof(unsigned long));
 			while (!readline(input, hello)) {
-				printf("%s\n", hello);
-				writeline(output, hello);
+				printf("%lu\n", *hello);
+				writeline(output, *hello, 32);
 			}
 		}
 		/* Done testing */

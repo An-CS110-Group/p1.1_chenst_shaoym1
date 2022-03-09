@@ -4,33 +4,45 @@
 
 #include "utils.h"
 
-//typedef enum InsType { I, U, S, R, SB, UJ } InsType;
+/*typedef enum InsType { I, U, S, R, SB, UJ } InsType;*/
 
-int readline(FILE *in, char *target) {
+int readline(FILE *in, unsigned long *returnValue) {
+	char temp[33];
+
 	/* 1.1 Check validation of input objects */
-	if (target == NULL | in == NULL) { return 1; }
+	if (in == NULL | returnValue == NULL) { return 1; }
 
 	/* 1.2 Read in a line of original file and check if we've met the end */
-	if (fgets(target, 35, in) == NULL) { return 2; }
+	if (fgets(temp, 35, in) == NULL) {
+		return 2;
+	}
 
 	/* 1.3 Get rid of '\n' */
-	target[32] = 0;
+	temp[32] = 0;
 
-	/* 1.4 Return 0 when nothing unusual happens */
+	/* 1.4 Return the converted number */
+	*returnValue = stringToBinaryNumber(temp);
 	return 0;
 }
 
-int writeline(FILE *out, const char *target) {
+int writeline(FILE *out, unsigned long target, int length) {
 	/* 2.1 Check validation of input objects */
-	if (target == NULL | out == NULL) { return 1; }
+	if (out == NULL) { return 1; }
+	if (length != 16 && length != 32) { return 2; }
 
 	/* 2.2 Write into the file */
-	if (fputs(target, out) == EOF) { return 2; }
+	{
+		int i;
+		for (i = length - 1; i >= 0; --i) {
+			/* 2.3 0 has ASCII code 48 */
+			if (fputc((((1 << i) & target) != 0) + 48, out) == EOF) return 3;
+		}
+	}
 
-	/* 2.3 Newline after successfully written */
-	if (fputs("\n", out) == EOF) { return 2; }
+	/* 2.4 Newline after successfully written */
+	if (fputc('\n', out) == EOF) { return 3; }
 
-	/* 2.4 Return 0 when nothing unusual happens */
+	/* 2.5 Return 0 when nothing unusual happens */
 	return 0;
 }
 
@@ -135,6 +147,4 @@ int inCompressAbleList(unsigned long instruction) {
 }
 
 
-int isCompressAble(unsigned long instruction) {
-	return (int) instruction;
-}
+int isCompressAble(unsigned long instruction) { return (int) instruction; }

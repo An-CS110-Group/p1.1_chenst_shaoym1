@@ -1,41 +1,38 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-/* TODO: It may be better if I return an int indicating the whole line.
- * Call stringToBinaryNumber.
- * */
-
-/*  int readline(FILE *in, char *target):
+/*  unsigned long readline(FILE *in):
  *
  *  Input:
  *      FILE *in: Valid readable filestream.
- *      char *target: Valid, writable, with at least 33 bytes of space.
+ *      unsigned long *target: receive return value.
  *
  *  Output:
  *      int:
- *          0: In most usual cases.
+ *          0: When something unusual happened.
  *          1: When some input values are invalid.
- *          2: The file has come to an end.
+ *          2: When failed to read from FILE *in.
+ *      char *returnValue:
+ *          0: In most usual cases.
+ *          1: When something usual happens.
  */
-int readline(FILE *in, char *target);
+int readline(FILE *in, unsigned long *target);
 
-/* TODO: We shall write from unsigned long instead of char*.
- * There should be different cases (16 / 32).
- * */
-
-/*  int writeline(FILE *out, const char *target):
+/*  int writeline(FILE *out, unsigned long target, int length):
  *
  *  Input:
  *      FILE *out: Valid writable filestream.
- *      char *target: Valid, readable.
+ *      unsigned long target: An instruction that is ready for writing.
+ *      int length: 16 / 32, depending on whether the instruction is compressed.
  *
  *  Output:
  *      int:
  *          0: In most usual cases.
  *          1: When some input values are invalid.
- *          2: The function fputs() has encountered unprecedented failure.
+ *          2: Invalid value of length, the value is only possible to be 16 / 32.
+ *          3: The function fputc() has encountered unprecedented failure.
  */
-int writeline(FILE *out, const char *target);
+int writeline(FILE *out, unsigned long target, int length);
 
 /*  int stringToBinaryInt(const char *instruction):
  *
