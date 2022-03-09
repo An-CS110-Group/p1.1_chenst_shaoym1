@@ -61,7 +61,7 @@ int readline(FILE *in, unsigned long *target);
  */
 int writeline(FILE *out, unsigned long target, int length);
 
-/*  int stringToBinaryInt(const char *instruction):
+/*  unsigned long stringToBinaryNumber(const char *instruction):
  *
  *  Input:
  *      const char *instruction: Valid, readable with a 32-bit instruction.
@@ -161,6 +161,17 @@ short getRS1(unsigned long instruction);
  *          result: An 5-bit number.
  */
 short getRS2(unsigned long instruction);
+
+/*  unsigned long getImm(unsigned long instruction):
+ *
+ *  Input:
+ *      unsigned long instruction: A 32-bit binary number.
+ *
+ *  Output:
+ *      unsigned long:
+ *          result: Imm (if exists) in the instruction.
+ */
+unsigned long getImm(unsigned long instruction);
 
 /*  Instruction *parse(unsigned long instruction):
  *

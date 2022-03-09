@@ -190,29 +190,54 @@ short getRS2(unsigned long instruction) {
 	return (short) ((instruction >> 20) & 0x1F);
 }
 
+unsigned long getImm(unsigned long instruction) {
+	/* 12.1 Get the type of instruction */
+	switch (getType(instruction)) {
+		case R:
+			/* 12.2 No imm to parse */
+			return 0;
+		case I:
+			/* 12.3 Imm lies in 31 ~ 20 in an I-type instruction */
+			return (instruction >> 20);
+		case S:
+			/* 12.4 Imm lies in 31 ~ 25 and 11 ~ 7 in an S-type instruction */
+			return (((instruction >> 25) << 5) | ((instruction >> 7) & 0x1F));
+		case SB:
+			/* 12.5 Imm lies in 31 ~ 25 and 11 ~ 7 in an SB-type instruction */
+			return (((instruction >> 31) << 12) | ((instruction & 0x80) << 11) | ((instruction & 0x7E000000) >> 20) | ((instruction & 0xF00) >> 7));
+		case U:
+			/* 12.6 Imm lies in 31 ~ 12 in a U-type instruction */
+			return ((instruction >> 12) << 12);
+			break;
+		case UJ:
+			/* 12.7 Imm lies in 31 ~ 12 in a U-type instruction */
+			return (((instruction & 0x80000000) >> 11) | (instruction & 0xFF000) | ((instruction & 0x100000) >> 9) | (instruction & 0x3FF00000) >> 19);
+	}
+}
+
 Instruction *parse(unsigned long instruction) {
-	/* 12.1 Create a new struct */
+	/* 13.1 Create a new struct */
 	Instruction *i = (Instruction *) malloc(sizeof(Instruction));
-	/* 12.2 Original value */
+	/* 13.2 Original value */
 	i->originalValue = instruction;
-	/* 12.3 Whether it can be compressed*/
-	i->isCompressAble = inCompressAbleList(instruction); /* Not guaranteed */
-	/* 12.4 Type of instruction */
+	/* 13.3 Whether it can be compressed*/
+	i->isCompressAble = inCompressAbleList(instruction); /* TODO: Not guaranteed */
+	/* 13.4 Type of instruction */
 	i->type = getType(instruction);
-	/* 12.5 Opcode */
+	/* 13.5 Opcode */
 	i->opcode = getOpcode(instruction);
-	/* 12.6 Funct7 */
+	/* 13.6 Funct7 */
 	i->funct7 = getFunct7(instruction);
-	/* 12.7 Funct3*/
+	/* 13.7 Funct3*/
 	i->funct3 = getFunct3(instruction);
-	/* 12.8 rd */
+	/* 13.8 rd */
 	i->rd = getRD(instruction);
-	/* 12.9 rs1 */
+	/* 13.9 rs1 */
 	i->rs1 = getRS1(instruction);
-	/* 12.10 rs2 */
+	/* 13.10 rs2 */
 	i->rs2 = getRS2(instruction);
-	/* 12.11 imm */
-	i->imm = 0; /* TODO: imm */
-	/* 12.12 Return instruction */
+	/* 13.11 imm */
+	i->imm = getImm(instruction);
+	/* 13.12 Return instruction */
 	return i;
 }
