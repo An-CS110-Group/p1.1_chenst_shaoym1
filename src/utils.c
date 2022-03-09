@@ -4,7 +4,6 @@
 
 #include "utils.h"
 
-/*typedef enum InsType { I, U, S, R, SB, UJ } InsType;*/
 
 int readline(FILE *in, unsigned long *returnValue) {
 	char temp[33];
@@ -13,9 +12,7 @@ int readline(FILE *in, unsigned long *returnValue) {
 	if (in == NULL | returnValue == NULL) { return 1; }
 
 	/* 1.2 Read in a line of original file and check if we've met the end */
-	if (fgets(temp, 35, in) == NULL) {
-		return 2;
-	}
+	if (fgets(temp, 35, in) == NULL) { return 2; }
 
 	/* 1.3 Get rid of '\n' */
 	temp[32] = 0;
@@ -69,7 +66,6 @@ short getFunct7(unsigned long instruction) {
 	/* 6.1 For any kind of instruction that Funct7 code exists, it lies in digits 31 ~ 25*/
 	return (short) ((instruction >> 25) & 0x7F);
 }
-
 
 int inCompressAbleList(unsigned long instruction) {
 	switch (getOpcode(instruction)) {
@@ -146,5 +142,77 @@ int inCompressAbleList(unsigned long instruction) {
 	return 0;
 }
 
+InsType getType(unsigned long instruction) {
+	/* 8.1 Get the opcode of the instruction, a certain opcode can decide the type of instruction*/
+	switch (getOpcode(instruction)) {
+			/* 8.2 I-type */
+		case 0x67:
+		case 0x73:
+		case 0x03:
+		case 0x13:
+		case 0x1B:
+			return I;
+			/* 8.3 U-type */
+		case 0x17:
+		case 0x37:
+			return U;
+			/* 8.4 S-type */
+		case 0x23:
+			return S;
+			/* 8.5 R-type */
+		case 0x33:
+		case 0x3B:
+			return R;
+			/* 8.6 SB-type */
+		case 0x63:
+			return SB;
+			/* 8.7 UJ-type */
+		case 0x6F:
+			return UJ;
+			/* 8.8 No such case */
+		default:
+			exit(0);
+	}
+}
 
-int isCompressAble(unsigned long instruction) { return (int) instruction; }
+short getRD(unsigned long instruction) {
+	/* 9.1 For any kind of instruction that rd code exists, it lies in digits 11 ~ 7 */
+	return (short) ((instruction >> 7) & 0x1F);
+}
+
+short getRS1(unsigned long instruction) {
+	/* 10.1 For any kind of instruction that rd code exists, it lies in digits 19 ~ 15 */
+	return (short) ((instruction >> 15) & 0x1F);
+}
+
+short getRS2(unsigned long instruction) {
+	/* 11.1 For any kind of instruction that rd code exists, it lies in digits 24 ~ 20 */
+	return (short) ((instruction >> 20) & 0x1F);
+}
+
+Instruction *parse(unsigned long instruction) {
+	/* 12.1 Create a new struct */
+	Instruction *i = (Instruction *) malloc(sizeof(Instruction));
+	/* 12.2 Original value */
+	i->originalValue = instruction;
+	/* 12.3 Whether it can be compressed*/
+	i->isCompressAble = inCompressAbleList(instruction); /* Not guaranteed */
+	/* 12.4 Type of instruction */
+	i->type = getType(instruction);
+	/* 12.5 Opcode */
+	i->opcode = getOpcode(instruction);
+	/* 12.6 Funct7 */
+	i->funct7 = getFunct7(instruction);
+	/* 12.7 Funct3*/
+	i->funct3 = getFunct3(instruction);
+	/* 12.8 rd */
+	i->rd = getRD(instruction);
+	/* 12.9 rs1 */
+	i->rs1 = getRS1(instruction);
+	/* 12.10 rs2 */
+	i->rs2 = getRS2(instruction);
+	/* 12.11 imm */
+	i->imm = 0; /* TODO: imm */
+	/* 12.12 Return instruction */
+	return i;
+}

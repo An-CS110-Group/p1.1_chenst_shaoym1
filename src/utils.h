@@ -1,6 +1,33 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+
+/* All kinds of instruction */
+typedef enum InsType { I, U, S, R, SB, UJ } InsType;
+
+typedef struct Instruction {
+	/* Original value of instruction */
+	unsigned long originalValue;
+	/* Whether the instruction can be compressed */
+	int isCompressAble;
+	/* The type of instruction */
+	InsType type;
+	/* opcode */
+	short opcode;
+	/* 31 ~ 25 bit of instruction */
+	short funct7;
+	/* 14 ~ 12 bit of instruction */
+	short funct3;
+	/* 11 ~ 7 bit of instruction */
+	short rd;
+	/* 19 ~ 15 bit of instruction */
+	short rs1;
+	/* 24 ~ 20 bit of instruction */
+	short rs2;
+	/* Immediate value in the instruction (if exists) */
+	unsigned long imm;
+} Instruction;
+
 /*  unsigned long readline(FILE *in):
  *
  *  Input:
@@ -12,9 +39,9 @@
  *          0: When something unusual happened.
  *          1: When some input values are invalid.
  *          2: When failed to read from FILE *in.
- *      char *returnValue:
- *          0: In most usual cases.
- *          1: When something usual happens.
+ *      unsigned long *target
+ *          0: When something unusual happens.
+ *          result: In most usual cases.
  */
 int readline(FILE *in, unsigned long *target);
 
@@ -49,7 +76,7 @@ unsigned long stringToBinaryNumber(const char *instruction);
 /*  short getOpcode(long instruction):
  *
  *  Input:
- *      long instruction: A 32-bit binary number.
+ *      unsigned long instruction: A 32-bit binary number.
  *
  *  Output:
  *      short:
@@ -60,7 +87,7 @@ short getOpcode(unsigned long instruction);
 /*  short getFunct3(unsigned long instruction):
  *
  *  Input:
- *      long instruction: A 32-bit binary number.
+ *      unsigned long instruction: A 32-bit binary number.
  *
  *  Output:
  *      short:
@@ -71,7 +98,7 @@ short getFunct3(unsigned long instruction);
 /*  short getFunct7(unsigned long instruction):
  *
  *  Input:
- *      long instruction: A 32-bit binary number.
+ *      unsigned long instruction: A 32-bit binary number.
  *
  *  Output:
  *      short:
@@ -79,11 +106,71 @@ short getFunct3(unsigned long instruction);
  */
 short getFunct7(unsigned long instruction);
 
-/* Wondering if I should return all details in this function.
- * Many helper function will be needed.
- * */
+/*  int inCompressAbleList(unsigned long instruction):
+ *
+ *  Input:
+ *      unsigned long instruction: A 32-bit binary number.
+ *
+ *  Output:
+ *      int:
+ *          0: When the instruction cannot be compressed.
+ *          1: When the instruction can be compressed.
+ */
 int inCompressAbleList(unsigned long instruction);
 
-int isCompressAble(unsigned long instruction);
+/*  InsType getType(unsigned long instruction):
+ *
+ *  Input:
+ *      unsigned long instruction: A 32-bit binary number.
+ *
+ *  Output:
+ *      InsType:
+ *          result: The type of instruction.
+ */
+InsType getType(unsigned long instruction);
+
+/*  short getRD(unsigned long instruction):
+ *
+ *  Input:
+ *      unsigned long instruction: A 32-bit binary number.
+ *
+ *  Output:
+ *      short:
+ *          result: An 5-bit number.
+ */
+short getRD(unsigned long instruction);
+
+/*  short getRS1(unsigned long instruction):
+ *
+ *  Input:
+ *      unsigned long instruction: A 32-bit binary number.
+ *
+ *  Output:
+ *      short:
+ *          result: An 5-bit number.
+ */
+short getRS1(unsigned long instruction);
+
+/*  short getRS2(unsigned long instruction):
+ *
+ *  Input:
+ *      unsigned long instruction: A 32-bit binary number.
+ *
+ *  Output:
+ *      short:
+ *          result: An 5-bit number.
+ */
+short getRS2(unsigned long instruction);
+
+/*  Instruction *parse(unsigned long instruction):
+ *
+ *  Input:
+ *      unsigned long instruction: A 32-bit binary number.
+ *
+ *  Output:
+ *      Instruction:
+ *          result: Detailed information about the instruction.
+ */
+Instruction *parse(unsigned long instruction);
 
 #endif
