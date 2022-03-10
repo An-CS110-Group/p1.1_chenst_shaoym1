@@ -3,7 +3,7 @@
 
 /* All kinds of compressed instruction */
 typedef enum Ctype {
-	ADD, MV, JR, JALR, LI, LUI, ADDI, SLLI, LW, SW, AND, OR, XOR, SUB, BEQZ, BNEZ, SRLI, SRAI, ANDI, J, JAL
+	NON = 0, ADD = 1, MV, JR, JALR, LI, LUI, ADDI, SLLI, LW, SW, AND, OR, XOR, SUB, BEQZ, BNEZ, SRLI, SRAI, ANDI, J, JAL
 } Ctype;
 
 typedef struct Compressed {
@@ -28,5 +28,7 @@ typedef struct Compressed {
 	/* rs2 */
 	short rs2;
 } Compressed;
+
+short compressRegister(short reg);
 
 #endif

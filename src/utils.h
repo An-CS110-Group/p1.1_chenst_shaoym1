@@ -3,7 +3,7 @@
 
 
 /* All kinds of instruction */
-typedef enum InsType { I, U, S, R, SB, UJ } InsType;
+typedef enum InsType { I = 1, U, S, R, SB, UJ } InsType;
 
 typedef struct Instruction {
 	/* Original value of instruction */

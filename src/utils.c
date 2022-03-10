@@ -12,7 +12,7 @@ static unsigned long stringToBinaryNumber(const char *instruction) {
 	/* 1.2 Perform string-to-long transformation and return */
 	return strtoul(instruction, NULL, 2);
 }
-
+/* TODO: consider tabs and indents */
 static int readline(FILE *in, unsigned long *returnValue) {
 	char temp[33];
 
