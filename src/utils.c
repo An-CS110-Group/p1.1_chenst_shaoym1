@@ -15,12 +15,14 @@ static unsigned long stringToBinaryNumber(const char *instruction) {
 /* TODO: consider tabs and indents */
 static int readline(FILE *in, unsigned long *returnValue) {
 	char temp[33];
+	
 
 	/* 2.1 Check validation of input objects */
 	if (in == NULL | returnValue == NULL) { return 1; }
 
 	/* 2.2 Read in a line of original file and check if we've met the end */
-	if (fgets(temp, 35, in) == NULL) { return 2; }
+	if (fscanf(in,"%s",temp)==NULL) { return 2; }
+	
 
 	/* 2.3 Get rid of '\n' */
 	temp[32] = 0;
@@ -60,11 +62,14 @@ static short getOpcode(unsigned long instruction) {
 static short getFunct3(unsigned long instruction) {
 	/* 5.1 For any kind of instruction that Funct3 code exists, it lies in digits 14 ~ 12 */
 	return (short) ((instruction >> 12) & 0x7);
+	/*func3 occupies three location*/
 }
 
 static short getFunct7(unsigned long instruction) {
 	/* 6.1 For any kind of instruction that Funct7 code exists, it lies in digits 31 ~ 25*/
 	return (short) ((instruction >> 25) & 0x7F);
+	/*func7 occupies 7 location*/
+
 }
 
 static int isInCompressAbleList(unsigned long instruction) {

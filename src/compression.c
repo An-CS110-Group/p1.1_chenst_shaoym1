@@ -130,6 +130,8 @@ Compressed **primaryCompression(const Instruction **source) {
 			target[i] = malloc(sizeof(Compressed));
 		}
 	}
+
+	
 	return target;
 }
 
