@@ -12,15 +12,29 @@ short compressRegister(const short reg) {
 	return (short) (reg & 0x8);
 }
 
+int parseNumber(unsigned long imm) {
+    /* 1. This function  */
+    unsigned long a = (imm >> 12) & 1;
+    if (a == 1) {
+        if ((~(imm - 1)) >> 6 == 0) {
+            return (int) (~(imm - 1));
+        } else {
+            return -1;
+        }
+    } else {
+        if (imm >> 6 == 0) {
+            return (int) imm;
+        } else return -1;
+    }
+}
+
 static Ctype checkR(const Instruction *source) {
 	/* 1. 4 conditions of R-type instruction can be compressed */
 	switch (source->funct3) {
 		case 0x0:
 			/* 2. c.sub, need to check whether registers can be compressed */
 			if (source->funct7 == 0x20) {
-				if (source->rd != source->rs1 || compressRegister(source->rd) == -1 ||
-				    compressRegister(source->rs2) == -1)
-					return NON;
+				if (source->rd != source->rs1 || compressRegister(source->rd) == -1 || compressRegister(source->rs2) == -1) return NON;
 				return SUB;
 			} else {
 				/* 3. c.add */
@@ -36,18 +50,15 @@ static Ctype checkR(const Instruction *source) {
 			}
 		case 0x4:
 			/* 6. c.xor, need to check whether registers can be compressed */
-			if (source->rd != source->rs1 || compressRegister(source->rd) == -1 || compressRegister(source->rs2) == -1)
-				return NON;
+			if (source->rd != source->rs1 || compressRegister(source->rd) == -1 || compressRegister(source->rs2) == -1) return NON;
 			return XOR;
 		case 0x6:
 			/* 7. c.or, need to check whether registers can be compressed */
-			if (source->rd != source->rs1 || compressRegister(source->rd) == -1 || compressRegister(source->rs2) == -1)
-				return NON;
+			if (source->rd != source->rs1 || compressRegister(source->rd) == -1 || compressRegister(source->rs2) == -1) return NON;
 			return OR;
 		case 0x7:
 			/* 8. c.and, need to check whether registers can be compressed */
-			if (source->rd != source->rs1 || compressRegister(source->rd) == -1 || compressRegister(source->rs2) == -1)
-				return NON;
+			if (source->rd != source->rs1 || compressRegister(source->rd) == -1 || compressRegister(source->rs2) == -1) return NON;
 			return AND;
 	}
 	return NON;
@@ -58,14 +69,26 @@ static Ctype checkI(const Instruction *source) {
 	switch (source->opcode) {
 		case 0x67:
 			if (source->rs1 == 0 || source->imm != 0) return NON;
-			/* 2. JR */
+			/* 2. c.jr */
 			if (source->rd == 0) return JR;
-			/* 3. JALR */
+			/* 3. c.jalr */
 			if (source->rd == 1) return JALR;
 			return NON;
 		case 0x03:
-			/* 4. TODO: */
+			/* 4. c.lw */
+			if (compressRegister(source->rd) != -1 && compressRegister(source->rs1) != -1) return LW;
+			return NON;
 		case 0x13:
+			switch (source->funct3) {
+				case 0x0:
+					/* 5. c.addi */
+					if (source->rd != 0 && source->rs1 == 0) return ADDI;
+				case 0x1:
+				case 0x5:
+				case 0x7:
+					break;
+					return NON;
+			}
 	}
 	return NON;
 }
