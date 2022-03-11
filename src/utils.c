@@ -54,6 +54,7 @@ int writeline(FILE *out, unsigned long target, int length) {
 static short getOpcode(unsigned long instruction) {
 	/* 4.1 For any kind of instruction, opcode lies in the last 7 digits */
 	return (short) (instruction & 0x7F);
+	/*since the instructions are 32 bit long ,so 0x7F gets the least_final 7 number which the opcode located*/
 }
 
 static short getFunct3(unsigned long instruction) {
