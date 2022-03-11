@@ -92,6 +92,7 @@ static Ctype checkI(const Instruction *source) {
 	}
 	return NON;
 }
+
 Ctype getCType(const Instruction *source) {
 	/* 1. Check validation */
 	if (source == NULL) return NON;
@@ -134,6 +135,8 @@ Compressed **primaryCompression(const Instruction **source) {
 	
 	return target;
 }
+
+
 
 
 

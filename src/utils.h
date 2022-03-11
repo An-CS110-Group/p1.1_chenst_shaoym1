@@ -184,3 +184,12 @@ int writeline(FILE *out, unsigned long target, int length);
 Instruction **readFromFile(FILE *in);
 
 #endif
+
+
+/*to write a genalized summary of the pro
+
+
+
+
+
+*/

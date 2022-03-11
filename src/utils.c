@@ -15,8 +15,6 @@ static unsigned long stringToBinaryNumber(const char *instruction) {
 /* TODO: consider tabs and indents */
 static int readline(FILE *in, unsigned long *returnValue) {
 	char temp[33];
-	
-
 	/* 2.1 Check validation of input objects */
 	if (in == NULL | returnValue == NULL) { return 1; }
 
@@ -71,7 +69,7 @@ static short getFunct7(unsigned long instruction) {
 	/*func7 occupies 7 location*/
 
 }
-
+/*having examined this function all match*/
 static int isInCompressAbleList(unsigned long instruction) {
 	switch (getOpcode(instruction)) {
 			/* 7.1 I-type */
