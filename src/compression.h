@@ -32,3 +32,11 @@ typedef struct Compressed {
 short compressRegister(short reg);
 
 #endif
+
+
+/*short compressRigister denotes that 
+we are restricted to some popular register
+first ,Check whether it can be compressed 
+second ,return the last 3 digits
+*/
+

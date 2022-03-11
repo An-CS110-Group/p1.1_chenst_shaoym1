@@ -84,6 +84,7 @@ static Ctype checkI(const Instruction *source) {
 					/* 5. c.addi */
 					if (source->rd != 0 && source->rs1 == 0) return ADDI;
 				case 0x1:
+
 				case 0x5:
 				case 0x7:
 					break;
@@ -92,6 +93,46 @@ static Ctype checkI(const Instruction *source) {
 	}
 	return NON;
 }
+
+static Ctype checkU(const Instruction *source)
+{
+	if ((source->rd !=  0x0 && source->rd != 0x2)&&(source->imm!=0x0))
+	{
+		return LUI;
+	}
+	else{
+		return NON;
+	}
+
+}
+
+static Ctype checkSB(const Instruction *source)
+{
+	switch (source->funct3){
+		case 0x0:/*beq*/
+			if ((source->rs2==  0x0 && compressRegister(source->rs1) != -1))
+				{
+					return BEQZ;
+				}
+				else{
+					return NON;
+				}
+
+		case 0x1:/*bne*/
+			if ((source->rs2==  0x0 && compressRegister(source->rs1) != -1))
+				{
+					return BNEZ;
+				}
+				else{
+					return NON;
+				}
+
+	}
+	
+
+}
+
+
 
 Ctype getCType(const Instruction *source) {
 	/* 1. Check validation */
@@ -105,11 +146,11 @@ Ctype getCType(const Instruction *source) {
 		case I:
 			return checkI(source);
 		case U:
-			break;
+			return checkU(source);
 		case S:
 			break;
 		case SB:
-			break;
+			return checkSB(source);
 		case UJ:
 			break;
 	}
@@ -130,6 +171,7 @@ Compressed **primaryCompression(const Instruction **source) {
 
 			target[i] = malloc(sizeof(Compressed));
 		}
+		if 
 	}
 
 	
@@ -140,3 +182,6 @@ Compressed **primaryCompression(const Instruction **source) {
 
 
 
+/*before we get certain Ctype and stored it in the Struct Compressed(which contains paticular compressed binary and related opcode ,type ...section),
+we should first check whether "soure" is valid .since the instruction sets' constranit problem are left behind,we need to compensate for it .we see that
+R,SB,S,CJ cant cause ambigous,so just neglect their constrants line ,but notice they have other limitations*/
