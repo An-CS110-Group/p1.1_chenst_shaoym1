@@ -64,6 +64,7 @@ static Ctype checkR(const Instruction *source) {
 	return NON;
 }
 
+
 static Ctype checkI(const Instruction *source) {
 	/* 1. 3 conditions of I-type instruction can be compressed */
 	switch (source->opcode) {
@@ -81,12 +82,21 @@ static Ctype checkI(const Instruction *source) {
 		case 0x13:
 			switch (source->funct3) {
 				case 0x0:
-					/* 5. c.addi */
-					if (source->rd != 0 && source->rs1 == 0) return ADDI;
-				case 0x1:
+					/* 5. c.Li */
+					if (source->rd != 0 && source->rs1 == 0) return LI;
+					else if((source->rd==source->rs1)&&(source->rd!=0x0)&&(source->imm!=0x0))return ADDI;
+					return NON
+				case 0x1:/*6.c.slli */
+					if((source->rd==source->rs1)&&(source->rd!=0x0))
+					{
+						/* code */
+					}
+					
 
 				case 0x5:
+
 				case 0x7:
+
 					break;
 					return NON;
 			}
@@ -128,10 +138,17 @@ static Ctype checkSB(const Instruction *source)
 				}
 
 	}
-	
-
 }
-
+static Ctype checkS(const Instruction *source)
+	{
+		if(compressRegister(source->rs1)!=-1)
+		{
+			return SW;
+		}
+		else{
+			return NON;
+		}
+	}
 
 
 Ctype getCType(const Instruction *source) {
@@ -148,7 +165,7 @@ Ctype getCType(const Instruction *source) {
 		case U:
 			return checkU(source);
 		case S:
-			break;
+			return checkS(source);
 		case SB:
 			return checkSB(source);
 		case UJ:
