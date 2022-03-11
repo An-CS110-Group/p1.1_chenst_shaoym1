@@ -85,17 +85,40 @@ static Ctype checkI(const Instruction *source) {
 					/* 5. c.Li */
 					if (source->rd != 0 && source->rs1 == 0) return LI;
 					else if((source->rd==source->rs1)&&(source->rd!=0x0)&&(source->imm!=0x0))return ADDI;
-					return NON
+					return NON;
 				case 0x1:/*6.c.slli */
-					if((source->rd==source->rs1)&&(source->rd!=0x0))
+					if(((source->rd==source->rs1)&&(source->rd!=0x0))&&(source->imm==0x0))
 					{
-						/* code */
+						return SLLI;
 					}
+					return NON;
 					
 
 				case 0x5:
+				if(source->funct7==0x0)
+				{
+					if((compressRegister(source->rd)!=-1)&&(source->rs1==source->rd)&&(source->imm==0))
+					{
+						return SRLI;
+					}
+					return NON;
+				}
+				else if(source->funct7==0x20)
+				{
+					if((compressRegister(source->rd)!=-1)&&(source->rs1==source->rd)&&(source->imm==0))
+					{
+						return SRAI;
+					}
+					return NON;
+				}
 
 				case 0x7:
+				if((compressRegister(source->rd)!=-1)&&(source->rs1==source->rd))
+					{
+						return ANDI;
+					}
+					return NON;
+
 
 					break;
 					return NON;
