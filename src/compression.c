@@ -163,7 +163,7 @@ static Ctype checkUJ(const Instruction *source) {
 	    (parseNumber(source->imm) <= powerOfTwo(11) - 1)) {
 		return J;
 	} else if (source->rd == 0x1 && (parseNumber(source->imm) % 2 == 0) && (parseNumber(source->imm) >= -1 * powerOfTwo(11)) &&
-	    (parseNumber(source->imm) <= powerOfTwo(11) - 1)) {
+	           (parseNumber(source->imm) <= powerOfTwo(11) - 1)) {
 		return JAL;
 	}
 	return NON;
@@ -428,4 +428,73 @@ Compressed **primaryCompression(const Instruction **source) {
 	return target;
 }
 
-/* TODO: originValue needs to be modified when confirming imms and offsets */
+static int addressNeedsUpdate(const Instruction *source) { return (source->type == SB || source->type == UJ); }
+
+void updateSBType(Instruction *toUpdate) {
+
+}
+
+void updateUJType(Instruction *toUpdate) {
+
+}
+
+void confirmAddress(Instruction **origin, Compressed **compressed) {
+	/* 1. Original value */
+	int i;
+	for (i = 0; i < 60; ++i) {
+		if (origin[i] == NULL) break;
+		/* 2. Some instructions don't need to be updated */
+		if (!addressNeedsUpdate(origin[i])) continue;
+		if (compressed[i] == NULL && origin[i]->imm > 0) {
+			/* 3. Init vars */
+			unsigned long imm = origin[i]->imm;
+			int actual = 0;
+			int j = i + 1;
+			/* 4. loop to find new address */
+			while (imm != 0) {
+				imm -= 4;
+				actual += compressed[j] == NULL ? 4 : 2;
+			}
+			/* 5. Fill in new addresses */
+			origin[i]->imm = actual;
+			origin[i]->type == SB ? updateSBType(origin[i]) : updateUJType(origin[i]);
+		} else if (compressed[i] == NULL && origin[i]->imm < 0) {
+			/* 6. Init vars */
+			unsigned long imm = origin[i]->imm;
+			int actual = 0;
+			int j = i - 1;
+			/* 7. loop to find new address */
+			while (imm != 0) {
+				imm += 4;
+				actual -= compressed[j] == NULL ? 4 : 2;
+			}
+			/* 8. Fill in new addresses */
+			origin[i]->imm = actual;
+			origin[i]->type == SB ? updateSBType(origin[i]) : updateUJType(origin[i]);
+		} else if (compressed[i] != NULL && compressed[i]->imm > 0) {
+			/* 9. Init vars */
+			unsigned long imm = compressed[i]->imm;
+			int actual = 0;
+			int j = i + 1;
+			/* 10. loop to find new address */
+			while (imm != 0) {
+				imm -= 4;
+				actual += compressed[j] == NULL ? 4 : 2;
+			}
+			/* 11. Fill in new addresses */
+			compressed[i]->imm = actual;
+		} else if (compressed[i] != NULL & compressed[i]->imm < 0) {
+			/* 12. Init vars */
+			unsigned long imm = compressed[i]->imm;
+			int actual = 0;
+			int j = i - 1;
+			/* 13. loop to find new address */
+			while (imm != 0) {
+				imm += 4;
+				actual -= compressed[j] == NULL ? 4 : 2;
+			}
+			/* 14. Fill in new addresses */
+			compressed[i]->imm = actual;
+		}
+	}
+}
