@@ -186,7 +186,7 @@ Instruction **readFromFile(FILE *in);
 #endif
 
 
-/*to write a genalized summary of the pro
+/*to write a generalized summary of the pro
 
 
 

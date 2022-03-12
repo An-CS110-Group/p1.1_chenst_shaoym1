@@ -1,3 +1,4 @@
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -12,20 +13,18 @@ short compressRegister(const short reg) {
 	return (short) (reg & 0x8);
 }
 
-int parseNumber(unsigned long imm) {
-    /* 1. This function  */
-    unsigned long a = (imm >> 12) & 1;
-    if (a == 1) {
-        if ((~(imm - 1)) >> 6 == 0) {
-            return (int) (~(imm - 1));
-        } else {
-            return -1;
-        }
-    } else {
-        if (imm >> 6 == 0) {
-            return (int) imm;
-        } else return -1;
-    }
+int parseNumber(unsigned long imm, int bits) {
+	/* 1. This function decides whether a 12-bit number can fit into bits */
+	unsigned long a = (imm >> 11) & 1;
+	if (a == 1) {
+		/* 2. Two's complement for negative numbers */
+		if ((~(imm - 1) & 0xFFF) >> bits == 0) { return (int) -(~(imm - 1) & 0xFFF); }
+		/* 3. Positive numbers */
+	} else {
+		if (imm >> bits == 0) { return (int) imm; }
+	}
+	/* 4. Other cases */
+	return INT_MIN;
 }
 
 static Ctype checkR(const Instruction *source) {
@@ -84,94 +83,65 @@ static Ctype checkI(const Instruction *source) {
 				case 0x0:
 					/* 5. c.Li */
 					if (source->rd != 0 && source->rs1 == 0) return LI;
-					else if((source->rd==source->rs1)&&(source->rd!=0x0)&&(source->imm!=0x0))return ADDI;
+					else if ((source->rd == source->rs1) && (source->rd != 0x0) && (source->imm != 0x0))
+						return ADDI;
 					return NON;
-				case 0x1:/*6.c.slli */
-					if(((source->rd==source->rs1)&&(source->rd!=0x0))&&(source->imm==0x0))
-					{
-						return SLLI;
-					}
+				case 0x1: /*6.c.slli */
+					if (((source->rd == source->rs1) && (source->rd != 0x0)) && (source->imm == 0x0)) { return SLLI; }
 					return NON;
-					
+
 
 				case 0x5:
-				if(source->funct7==0x0)
-				{
-					if((compressRegister(source->rd)!=-1)&&(source->rs1==source->rd)&&(source->imm==0))
-					{
-						return SRLI;
+					if (source->funct7 == 0x0) {
+						if ((compressRegister(source->rd) != -1) && (source->rs1 == source->rd) && (source->imm == 0)) { return SRLI; }
+						return NON;
+					} else if (source->funct7 == 0x20) {
+						if ((compressRegister(source->rd) != -1) && (source->rs1 == source->rd) && (source->imm == 0)) { return SRAI; }
+						return NON;
 					}
-					return NON;
-				}
-				else if(source->funct7==0x20)
-				{
-					if((compressRegister(source->rd)!=-1)&&(source->rs1==source->rd)&&(source->imm==0))
-					{
-						return SRAI;
-					}
-					return NON;
-				}
 
 				case 0x7:
-				if((compressRegister(source->rd)!=-1)&&(source->rs1==source->rd))
-					{
-						return ANDI;
-					}
-					return NON;
-
-
-					break;
+					if ((compressRegister(source->rd) != -1) && (source->rs1 == source->rd)) { return ANDI; }
 					return NON;
 			}
 	}
 	return NON;
 }
 
-static Ctype checkU(const Instruction *source)
-{
-	if ((source->rd !=  0x0 && source->rd != 0x2)&&(source->imm!=0x0))
-	{
+static Ctype checkU(const Instruction *source) {
+	if ((source->rd != 0x0 && source->rd != 0x2) && (source->imm != 0x0)) {
 		return LUI;
-	}
-	else{
+	} else {
 		return NON;
 	}
-
 }
 
-static Ctype checkSB(const Instruction *source)
-{
-	switch (source->funct3){
-		case 0x0:/*beq*/
-			if ((source->rs2==  0x0 && compressRegister(source->rs1) != -1))
-				{
-					return BEQZ;
-				}
-				else{
-					return NON;
-				}
+static Ctype checkSB(const Instruction *source) {
+	switch (source->funct3) {
+		case 0x0: /*beq*/
+			if ((source->rs2 == 0x0 && compressRegister(source->rs1) != -1)) {
+				return BEQZ;
+			} else {
+				return NON;
+			}
 
-		case 0x1:/*bne*/
-			if ((source->rs2==  0x0 && compressRegister(source->rs1) != -1))
-				{
-					return BNEZ;
-				}
-				else{
-					return NON;
-				}
+		case 0x1: /*bne*/
+			if ((source->rs2 == 0x0 && compressRegister(source->rs1) != -1)) {
+				return BNEZ;
+			} else {
+				return NON;
+			}
+	}
+	return NON;
+}
 
+static Ctype checkS(const Instruction *source) {
+	if (compressRegister(source->rs1) != -1) {
+		return SW;
+	} else {
+		return NON;
 	}
 }
-static Ctype checkS(const Instruction *source)
-	{
-		if(compressRegister(source->rs1)!=-1)
-		{
-			return SW;
-		}
-		else{
-			return NON;
-		}
-	}
 
 
 Ctype getCType(const Instruction *source) {
@@ -211,15 +181,11 @@ Compressed **primaryCompression(const Instruction **source) {
 
 			target[i] = malloc(sizeof(Compressed));
 		}
-		if 
 	}
 
-	
+
 	return target;
 }
-
-
-
 
 
 /*before we get certain Ctype and stored it in the Struct Compressed(which contains paticular compressed binary and related opcode ,type ...section),

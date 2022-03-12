@@ -2,9 +2,7 @@
 #define COMPRESSION_H
 
 /* All kinds of compressed instruction */
-typedef enum Ctype {
-	NON = 0, ADD = 1, MV, JR, JALR, LI, LUI, ADDI, SLLI, LW, SW, AND, OR, XOR, SUB, BEQZ, BNEZ, SRLI, SRAI, ANDI, J, JAL
-} Ctype;
+typedef enum Ctype { NON = 0, ADD = 1, MV, JR, JALR, LI, LUI, ADDI, SLLI, LW, SW, AND, OR, XOR, SUB, BEQZ, BNEZ, SRLI, SRAI, ANDI, J, JAL } Ctype;
 
 typedef struct Compressed {
 	/* The type of compressed instruction */
@@ -28,6 +26,9 @@ typedef struct Compressed {
 	/* rs2 */
 	short rs2;
 } Compressed;
+
+/* Return INT_MIN when imm cannot fit into 12 bits, otherwise return its value */
+int parseNumber(unsigned long imm, int bits);
 
 short compressRegister(short reg);
 

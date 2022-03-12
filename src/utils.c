@@ -12,15 +12,15 @@ static unsigned long stringToBinaryNumber(const char *instruction) {
 	/* 1.2 Perform string-to-long transformation and return */
 	return strtoul(instruction, NULL, 2);
 }
-/* TODO: consider tabs and indents */
+
 static int readline(FILE *in, unsigned long *returnValue) {
 	char temp[33];
 	/* 2.1 Check validation of input objects */
 	if (in == NULL | returnValue == NULL) { return 1; }
 
 	/* 2.2 Read in a line of original file and check if we've met the end */
-	if (fscanf(in,"%s",temp)==NULL) { return 2; }
-	
+	if (fscanf(in, "%s", temp) == EOF) { return 2; }
+
 
 	/* 2.3 Get rid of '\n' */
 	temp[32] = 0;
@@ -67,7 +67,6 @@ static short getFunct7(unsigned long instruction) {
 	/* 6.1 For any kind of instruction that Funct7 code exists, it lies in digits 31 ~ 25*/
 	return (short) ((instruction >> 25) & 0x7F);
 	/*func7 occupies 7 location*/
-
 }
 /*having examined this function all match*/
 static int isInCompressAbleList(unsigned long instruction) {
@@ -208,16 +207,14 @@ static unsigned long getImm(unsigned long instruction) {
 			return (((instruction >> 25) << 5) | ((instruction >> 7) & 0x1F));
 		case SB:
 			/* 12.5 Imm lies in 31 ~ 25 and 11 ~ 7 in an SB-type instruction */
-			return (((instruction >> 31) << 12) | ((instruction & 0x80) << 11) | ((instruction & 0x7E000000) >> 20) |
-			        ((instruction & 0xF00) >> 7));
+			return (((instruction >> 31) << 12) | ((instruction & 0x80) << 11) | ((instruction & 0x7E000000) >> 20) | ((instruction & 0xF00) >> 7));
 		case U:
 			/* 12.6 Imm lies in 31 ~ 12 in a U-type instruction */
 			return ((instruction >> 12) << 12);
 			break;
 		case UJ:
 			/* 12.7 Imm lies in 31 ~ 12 in a U-type instruction */
-			return (((instruction & 0x80000000) >> 11) | (instruction & 0xFF000) | ((instruction & 0x100000) >> 9) |
-			        (instruction & 0x3FF00000) >> 19);
+			return (((instruction & 0x80000000) >> 11) | (instruction & 0xFF000) | ((instruction & 0x100000) >> 9) | (instruction & 0x3FF00000) >> 19);
 	}
 }
 
