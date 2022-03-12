@@ -172,6 +172,18 @@ static Ctype checkS(const Instruction *source)
 			return NON;
 		}
 	}
+static Ctype checkUJ(const Instruction *source)
+{
+	if(source->rd==0x0)
+	{
+		return J;
+	}
+	else if(source->rd==0x1)
+	{
+		return JAL;
+	}
+	return NON;
+}
 
 
 Ctype getCType(const Instruction *source) {
@@ -192,7 +204,7 @@ Ctype getCType(const Instruction *source) {
 		case SB:
 			return checkSB(source);
 		case UJ:
-			break;
+			return checkUJ(source);
 	}
 	return NON;
 }
