@@ -5,6 +5,32 @@
 /* All kinds of instruction */
 typedef enum InsType { I = 1, U, S, R, SB, UJ } InsType;
 
+/* All kinds of compressed instruction */
+typedef enum Ctype { NON = 0, ADD = 1, MV, JR, JALR, LI, LUI, ADDI, SLLI, LW, SW, AND, OR, XOR, SUB, BEQZ, BNEZ, SRLI, SRAI, ANDI, J, JAL } Ctype;
+
+typedef struct Compressed {
+	/* The type of compressed instruction */
+	Ctype type;
+	/* 1 ~ 0 bit of compressed instruction */
+	short opcode;
+	/* 15 ~ 12 bit of compressed instruction */
+	short funct4;
+	/* 15 ~ 13 bit of compressed instruction */
+	short funct3;
+	/* 15 ~ 10 bit of compressed instruction */
+	short funct6;
+	/* 11 ~ 10 bit of compressed instruction */
+	short funct2;
+	/* Immediate field in the instruction (if exists) */
+	int imm;
+	/* rd, aka rd/rs1 */
+	short rd;
+	/* rs1 */
+	short rs1;
+	/* rs2 */
+	short rs2;
+} Compressed;
+
 typedef struct Instruction {
 	/* Original value of instruction */
 	unsigned long originalValue;
@@ -58,7 +84,6 @@ typedef struct Instruction {
  *          2: Invalid value of length, the value is only possible to be 16 / 32.
  *          3: The function fputc() has encountered unprecedented failure.
  */
-int writeline(FILE *out, unsigned long target, int length);
 
 /*  unsigned long stringToBinaryNumber(const char *instruction):
  *
@@ -182,5 +207,20 @@ int writeline(FILE *out, unsigned long target, int length);
  *          result: An array of original instructions with length 60.
  */
 Instruction **readFromFile(FILE *in);
+
+/*  int writeToFile(FILE *out, Instruction **original, Compressed **compressed):
+ *
+ *  Input:
+ *      FILE *out: Valid writable filestream.
+ *      Instruction **original: All original, uncompressed instructions.
+ *      Compressed **compressed: All compressed instructions.
+ *
+ *  Output:
+ *      int:
+ *          0: In most usual cases.
+ *          1: When some input values are invalid.
+ *
+ */
+int writeToFile(FILE *out, Instruction **original, Compressed **compressed);
 
 #endif

@@ -407,3 +407,5 @@ Compressed **primaryCompression(const Instruction **source) {
 	/* 18. Return object */
 	return target;
 }
+
+/* TODO: originValue needs to be modified when confirming imms and offsets */

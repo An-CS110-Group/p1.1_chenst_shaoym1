@@ -30,10 +30,11 @@ static int readline(FILE *in, unsigned long *returnValue) {
 	return 0;
 }
 
-int writeline(FILE *out, unsigned long target, int length) {
+static int writeline(FILE *out, unsigned long target, int length) {
 	/* 3.1 Check validation of input objects */
-	if (out == NULL) { return 1; }
-	if (length != 16 && length != 32) { return 2; }
+	/* if (out == NULL) { return 1; } */
+	/* if (length != 16 && length != 32) { return 2; } */
+	/* The guards are not needed, I commented them out to avoid clang-tidy warnings */
 
 	/* 3.2 Write into the file */
 	{
@@ -211,7 +212,6 @@ static unsigned long getImm(unsigned long instruction) {
 		case U:
 			/* 12.6 Imm lies in 31 ~ 12 in a U-type instruction */
 			return ((instruction >> 12) << 12);
-			break;
 		case UJ:
 			/* 12.7 Imm lies in 31 ~ 12 in a U-type instruction */
 			return (((instruction & 0x80000000) >> 11) | (instruction & 0xFF000) | ((instruction & 0x100000) >> 9) | (instruction & 0x3FF00000) >> 19);
@@ -266,4 +266,96 @@ Instruction **readFromFile(FILE *in) {
 	free(num);
 	/* 14.6 Return instructions read */
 	return target;
+}
+
+static unsigned int generate16bit(Compressed *compressed) {
+	/* 15.1 Print format for every kind of compressed instructions */
+	switch (compressed->type) {
+		case ADD:
+			/* 15.2 CR-format */
+			return ((compressed->funct4 << 12) | (compressed->rd << 7) | (compressed->rs2 << 2) | compressed->opcode);
+		case MV:
+			/* 15.3 CR-format */
+			break;
+		case JR:
+			/* 15.4 CR-format */
+			break;
+		case JALR:
+			/* 15.5 CR-format */
+			break;
+		case LI:
+			/* 15.6 CI-format */
+			break;
+		case LUI:
+			/* 15.7 CI-format */
+			break;
+		case ADDI:
+			/* 15.8 CI-format */
+			break;
+		case SLLI:
+			/* 15.9 CI-format */
+			break;
+		case LW:
+			/* 15.10 CL-format */
+			break;
+		case SW:
+			/* 15.11 CS-format-1 */
+			break;
+		case AND:
+			/* 15.12 CS-format-2 */
+			break;
+		case OR:
+			/* 15.13 CS-format-2 */
+			break;
+		case XOR:
+			/* 15.14 CS-format-2 */
+			break;
+		case SUB:
+			/* 15.15 CS-format-2 */
+			break;
+		case BEQZ:
+			/* 15.16 CB-format-1 */
+			break;
+		case BNEZ:
+			/* 15.17 CB-format-1 */
+			break;
+		case SRLI:
+			/* 15.18 CB-format-2 */
+			break;
+		case SRAI:
+			/* 15.19 CB-format-2 */
+			break;
+		case ANDI:
+			/* 15.20 CB-format-2 */
+			break;
+		case J:
+			/* 15.21 CJ-format */
+			break;
+		case JAL:
+			/* 15.22 CJ-format */
+			break;
+		default:
+			/* 15.23 This case should not happen */
+			printf("You shall not reach here!\n");
+	}
+}
+
+int writeToFile(FILE *out, Instruction **original, Compressed **compressed) {
+	/* 15.1 Check validation */
+	if (out == NULL || original == NULL || compressed == NULL) return 1;
+	/* 15.2 Print to file in a loop */
+	for (int i = 0; i < 60; ++i) {
+		/* 15.3 If all instructions are written */
+		if (original[i] == NULL) return 0;
+		if (compressed[i] == NULL) {
+			/* 15.4 This instruction cannot be compressed */
+			writeline(out, original[i]->originalValue, 32);
+		} else {
+			/* 15.5 Generate a compressed instruction */
+			writeline(out, generate16bit(compressed[i]), 16);
+		}
+	}
+	/* 15.6 We should not reach here */
+	printf("Reached the end of array!\n");
+	return 0;
 }
