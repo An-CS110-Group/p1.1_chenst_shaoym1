@@ -276,69 +276,83 @@ static unsigned int generate16bit(Compressed *compressed) {
 			return ((compressed->funct4 << 12) | (compressed->rd << 7) | (compressed->rs2 << 2) | compressed->opcode);
 		case MV:
 			/* 15.3 CR-format */
-			break;
+			return ((compressed->funct4 << 12) | (compressed->rd << 7) | (compressed->rs2 << 2) | compressed->opcode);
 		case JR:
-			/* 15.4 CR-format */
-			break;
+			/* 15.4 CR-format */  /*check... perhaps (compressed->rs2 << 2) also work*/
+			return ((compressed->funct4 << 12) | (compressed->rd << 7) | (0x00000 << 2) | compressed->opcode);
 		case JALR:
 			/* 15.5 CR-format */
-			break;
+			return ((compressed->funct4 << 12) | (compressed->rd << 7) | (0x00000 << 2) | compressed->opcode);
+			 /*check... perhaps (compressed->rs2 << 2) also work*/
 		case LI:
 			/* 15.6 CI-format */
-			break;
+			return ((compressed->funct3 << 13) | (((compressed->imm>>5)&0x1)<< 12) | (compressed->rd<< 7) | ((compressed->imm&0x1F)<< 2)|compressed->opcode);
 		case LUI:
 			/* 15.7 CI-format */
-			break;
+			return ((compressed->funct3 << 13) | (((compressed->imm>>17)&0x1)<< 12) | (compressed->rd<< 7) | ((compressed->imm&0xF00)<< 2)|compressed->opcode);
+			
 		case ADDI:
 			/* 15.8 CI-format */
-			break;
+			return ((compressed->funct3 << 13) | (((compressed->imm>>5)&0x1)<< 12) | (compressed->rd<< 7) | ((compressed->imm&0x1F)<< 2)|compressed->opcode);
 		case SLLI:
 			/* 15.9 CI-format */
-			break;
+			return ((compressed->funct3 << 13) | (((compressed->imm>>5)&0x1)<< 12) | (compressed->rd<< 7) | ((compressed->imm&0x1F)<< 2)|compressed->opcode);
+
 		case LW:
 			/* 15.10 CL-format */
-			break;
+			return ((compressed->funct3 << 13) | (((compressed->imm)&0x18)<< 12) | (compressed->rs1<< 7) | ((compressed->imm&0x2)<< 3)|((compressed->imm&0x20)<< 2)|compressed->opcode);
+			
 		case SW:
-			/* 15.11 CS-format-1 */
-			break;
+			return ((compressed->funct3 << 13) | (((compressed->imm)&0x18)<< 12) | (compressed->rs1<< 7) | ((compressed->imm&0x2)<< 3)|((compressed->imm&0x20)<< 2)|compressed->opcode);
+
 		case AND:
 			/* 15.12 CS-format-2 */
-			break;
+			return ((compressed->funct6 << 10) | (compressed->rd<< 7) | ((compressed->funct2)<< 5)|((compressed->rs2)<< 2)|compressed->opcode);
+
 		case OR:
 			/* 15.13 CS-format-2 */
-			break;
+			return ((compressed->funct6 << 10) | (compressed->rd<< 7) | ((compressed->funct2)<< 5)|((compressed->rs2)<< 2)|compressed->opcode);
+			
 		case XOR:
 			/* 15.14 CS-format-2 */
-			break;
+			return ((compressed->funct6 << 10) | (compressed->rd<< 7) | ((compressed->funct2)<< 5)|((compressed->rs2)<< 2)|compressed->opcode);
+			
 		case SUB:
 			/* 15.15 CS-format-2 */
-			break;
+			return ((compressed->funct6 << 10) | (compressed->rd<< 7) | ((compressed->funct2)<< 5)|((compressed->rs2)<< 2)|compressed->opcode);
+			
 		case BEQZ:
 			/* 15.16 CB-format-1 */
-			break;
+			return ((compressed->funct6 << 13) | (compressed->imm&0x100)<<12|(compressed->imm&0x18)<<13| ((compressed->rs1)<< 7)| (compressed->imm&0xC0)<<5|(compressed->imm&0x6)<<3|(compressed->imm&0x20)<<2|compressed->opcode);
+			
 		case BNEZ:
 			/* 15.17 CB-format-1 */
-			break;
+			return ((compressed->funct6 << 13) | (compressed->imm&0x100)<<12|(compressed->imm&0x18)<<13| ((compressed->rs1)<< 7)| (compressed->imm&0xC0)<<5|(compressed->imm&0x6)<<3|(compressed->imm&0x20)<<2|compressed->opcode);
+
 		case SRLI:
 			/* 15.18 CB-format-2 */
-			break;
+			return ((compressed->funct3 << 13) | (compressed->imm&0x20)<<12|(compressed->funct2)<<10| ((compressed->rd)<< 7)| (compressed->imm&0x1F)<<2|compressed->opcode);
+
 		case SRAI:
 			/* 15.19 CB-format-2 */
-			break;
+			return ((compressed->funct3 << 13) | (compressed->imm&0x20)<<12|(compressed->funct2)<<10| ((compressed->rd)<< 7)| (compressed->imm&0x1F)<<2|compressed->opcode);
+
 		case ANDI:
 			/* 15.20 CB-format-2 */
-			break;
+			return ((compressed->funct3 << 13) | (compressed->imm&0x20)<<12|(compressed->funct2)<<10| ((compressed->rd)<< 7)| (compressed->imm&0x1F)<<2|compressed->opcode);
+
 		case J:
 			/* 15.21 CJ-format */
-			break;
+			return ((compressed->funct3 << 13) | (compressed->imm&800)<<12|(compressed->imm&0x10)<<11| ((compressed->imm&0x300)<< 9)| (compressed->imm&0x400)<<8|(compressed->imm&0x40)<<7|(compressed->imm&0x80)<<6|(compressed->imm&0xE)<<3|(compressed->imm&0x10)<<2|compressed->opcode);
+			
 		case JAL:
 			/* 15.22 CJ-format */
-			break;
+			return ((compressed->funct3 << 13) | (compressed->imm&800)<<12|(compressed->imm&0x10)<<11| ((compressed->imm&0x300)<< 9)| (compressed->imm&0x400)<<8|(compressed->imm&0x40)<<7|(compressed->imm&0x80)<<6|(compressed->imm&0xE)<<3|(compressed->imm&0x10)<<2|compressed->opcode);
+			
 		default:
 			/* 15.23 This case should not happen */
 			printf("You shall not reach here!\n");
 	}
-	return 0;
 }
 
 int writeToFile(FILE *out, Instruction **original, Compressed **compressed) {
