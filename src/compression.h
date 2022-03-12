@@ -5,4 +5,6 @@
 
 Compressed **primaryCompression(const Instruction **source);
 
+void confirmAddress(Instruction **origin, Compressed **compressed);
+
 #endif

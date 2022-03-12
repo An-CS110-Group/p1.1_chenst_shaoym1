@@ -6,7 +6,7 @@
 #include "compression.h"
 #include "utils.h"
 
-static int powerOfTwo(int num) {
+static int powerOfTwo(const int num) {
 	/* Returns 2^(num) */
 	return 1 << (num);
 }
@@ -18,7 +18,7 @@ static short compressRegister(const short reg) {
 	return (short) (reg & 0x8);
 }
 
-static int parseNumber(unsigned long imm) {
+static int parseNumber(const unsigned long imm) {
 	/* 1. This function decides whether a 12-bit number can fit into bits */
 	unsigned long a = (imm >> 11) & 1;
 	if (a == 1) {
@@ -31,10 +31,6 @@ static int parseNumber(unsigned long imm) {
 }
 
 static Ctype checkR(const Instruction *source) {
-	if(parseNumber(source)>63|parseNumber(source)<-64)
-	{
-		return NON;
-	}
 	/* 1. 4 conditions of R-type instruction can be compressed */
 	switch (source->funct3) {
 		case 0x0:
@@ -69,7 +65,6 @@ static Ctype checkR(const Instruction *source) {
 	}
 	return NON;
 }
-
 
 static Ctype checkI(const Instruction *source) {
 	/* 1. 3 conditions of I-type instruction can be compressed */
@@ -402,7 +397,7 @@ Compressed **primaryCompression(const Instruction **source) {
 			/* 4. The end of all instructions */
 			if (source[i] == NULL) break;
 			/* 5. Impossible to compress */
-			if (source[i]->inCompressAbleList) continue;
+			if (!source[i]->inCompressAbleList) continue;
 			/* 6. Can compress or not */
 			if (assertCType(source[i]) == NON) continue;
 			/* 7. Allocate space for compressed instruction */
@@ -435,12 +430,32 @@ Compressed **primaryCompression(const Instruction **source) {
 
 static int addressNeedsUpdate(const Instruction *source) { return (source->type == SB || source->type == UJ); }
 
-void updateSBType(Instruction *toUpdate) {
-
+static void updateSBType(Instruction *toUpdate) {
+	/* 1. Duplicate original imm */
+	unsigned long duplicate = toUpdate->originalValue;
+	/* 2. Clean the imm field */
+	duplicate &= 0xFE000F80;
+	/* 3. Add the new imm */
+	duplicate |= ((toUpdate->imm & (1 << 12)) >> 12 << 31);
+	duplicate |= ((toUpdate->imm & 0x7E0) >> 5 << 25);
+	duplicate |= ((toUpdate->imm & 0x1E) >> 1 << 8);
+	duplicate |= ((toUpdate->imm & (1 << 11)) >> 11 << 7);
+	/* 4. Correct the new value */
+	toUpdate->originalValue = duplicate;
 }
 
-void updateUJType(Instruction *toUpdate) {
-
+static void updateUJType(Instruction *toUpdate) {
+	/* 1. Duplicate original imm */
+	unsigned long duplicate = toUpdate->originalValue;
+	/* 2. Clean the imm field */
+	duplicate &= 0xFFFFF000;
+	/* 3. Add the new imm */
+	duplicate |= ((toUpdate->imm & (1 << 20)) >> 20 << 31);
+	duplicate |= ((toUpdate->imm & 0x7FE) >> 1 << 21);
+	duplicate |= ((toUpdate->imm & (1 << 11)) >> 11 << 20);
+	duplicate |= ((toUpdate->imm & 0xFF000) >> 12 << 12);
+	/* 4. Correct the new value */
+	toUpdate->originalValue = duplicate;
 }
 
 void confirmAddress(Instruction **origin, Compressed **compressed) {

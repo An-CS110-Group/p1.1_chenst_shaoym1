@@ -54,9 +54,10 @@ int translate(const char *in, const char *out) {
 		if (open_files(&input, &output, in, out) != 0) exit(1);
 		/* Test functions over here! */
 		{
-			/* Usage example:
-		     *      Instruction** OriginalFile = readFromFile(input);
-			*/
+			Instruction **originalFile = readFromFile(input);
+			Compressed **compressed = primaryCompression((const Instruction **) originalFile);
+			confirmAddress(originalFile, compressed);
+			writeToFile(output, originalFile, compressed);
 		}
 		/* Done testing */
 		close_files(&input, &output);
