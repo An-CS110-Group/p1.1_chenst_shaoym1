@@ -31,6 +31,10 @@ static int parseNumber(unsigned long imm) {
 }
 
 static Ctype checkR(const Instruction *source) {
+	if(parseNumber(source)>63|parseNumber(source)<-64)
+	{
+		return NON;
+	}
 	/* 1. 4 conditions of R-type instruction can be compressed */
 	switch (source->funct3) {
 		case 0x0:
@@ -65,6 +69,7 @@ static Ctype checkR(const Instruction *source) {
 	}
 	return NON;
 }
+
 
 static Ctype checkI(const Instruction *source) {
 	/* 1. 3 conditions of I-type instruction can be compressed */
