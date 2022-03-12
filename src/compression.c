@@ -1,4 +1,3 @@
-#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -125,12 +124,15 @@ static Ctype checkSB(const Instruction *source) {
 				return NON;
 			}
 
-		case 0x1: /*bne*/
-			if ((source->rs2 == 0x0 && compressRegister(source->rs1) != -1)) {
-				return BNEZ;
-			} else {
-				return NON;
-			}
+		case 0x1:/*bne*/
+			if ((source->rs2==  0x0 && compressRegister(source->rs1) != -1))
+				{
+					return BNEZ;
+				}
+				else{
+					return NON;
+				}
+
 	}
 	return NON;
 }
@@ -141,6 +143,19 @@ static Ctype checkS(const Instruction *source) {
 	} else {
 		return NON;
 	}
+}
+
+static Ctype checkUJ(const Instruction *source)
+{
+	if(source->rd==0x0)
+	{
+		return J;
+	}
+	else if(source->rd==0x1)
+	{
+		return JAL;
+	}
+	return NON;
 }
 
 
@@ -162,7 +177,7 @@ Ctype getCType(const Instruction *source) {
 		case SB:
 			return checkSB(source);
 		case UJ:
-			break;
+			return checkUJ(source);
 	}
 	return NON;
 }
