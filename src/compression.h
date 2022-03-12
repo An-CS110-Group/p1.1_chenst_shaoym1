@@ -1,6 +1,8 @@
 #ifndef COMPRESSION_H
 #define COMPRESSION_H
 
+#include "utils.h"
+
 /* All kinds of compressed instruction */
 typedef enum Ctype { NON = 0, ADD = 1, MV, JR, JALR, LI, LUI, ADDI, SLLI, LW, SW, AND, OR, XOR, SUB, BEQZ, BNEZ, SRLI, SRAI, ANDI, J, JAL } Ctype;
 
@@ -17,7 +19,7 @@ typedef struct Compressed {
 	short funct6;
 	/* 11 ~ 10 bit of compressed instruction */
 	short funct2;
-	/* Immediate value in the instruction (if exists) */
+	/* Immediate field in the instruction (if exists) */
 	int imm;
 	/* rd, aka rd/rs1 */
 	short rd;
@@ -27,9 +29,6 @@ typedef struct Compressed {
 	short rs2;
 } Compressed;
 
-/* Return INT_MIN when imm cannot fit into 12 bits, otherwise return its value */
-int parseNumber(unsigned long imm, int bits);
-
-short compressRegister(short reg);
+Compressed **primaryCompression(const Instruction **source);
 
 #endif

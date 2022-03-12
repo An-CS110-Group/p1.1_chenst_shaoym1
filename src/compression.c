@@ -6,25 +6,23 @@
 #include "compression.h"
 #include "utils.h"
 
-short compressRegister(const short reg) {
+static short compressRegister(const short reg) {
 	/* 1. Check whether it can be compressed */
 	if ((reg >> 3) == 1) return -1;
 	/* 2. Return the last 3 digits */
 	return (short) (reg & 0x8);
 }
 
-int parseNumber(unsigned long imm, int bits) {
+static int parseNumber(unsigned long imm) {
 	/* 1. This function decides whether a 12-bit number can fit into bits */
 	unsigned long a = (imm >> 11) & 1;
 	if (a == 1) {
 		/* 2. Two's complement for negative numbers */
-		if ((~(imm - 1) & 0xFFF) >> bits == 0) { return (int) -(~(imm - 1) & 0xFFF); }
-		/* 3. Positive numbers */
+		return (int) -(~(imm - 1) & 0xFFF);
 	} else {
-		if (imm >> bits == 0) { return (int) imm; }
+		/* 3. Positive numbers */
+		return (int) imm;
 	}
-	/* 4. Other cases */
-	return INT_MIN;
 }
 
 static Ctype checkR(const Instruction *source) {
@@ -62,7 +60,6 @@ static Ctype checkR(const Instruction *source) {
 	}
 	return NON;
 }
-
 
 static Ctype checkI(const Instruction *source) {
 	/* 1. 3 conditions of I-type instruction can be compressed */
@@ -152,8 +149,7 @@ static Ctype checkUJ(const Instruction *source) {
 	return NON;
 }
 
-
-Ctype assertCType(const Instruction *source) {
+static Ctype assertCType(const Instruction *source) {
 	/* 1. Check validation */
 	if (source == NULL) return NON;
 	/* 2. Cannot be compressed */
@@ -214,7 +210,7 @@ static short assertOpcode(const Instruction *source) {
 static short assertFunct4(const Instruction *source) {
 	/* Only CR-format compressed instruction has Funct4 code */
 	switch (assertCType(source)) {
-		case ADD: /* 1001 */
+		case ADD:  /* 1001 */
 		case JALR: /* 1001 */
 			return 9;
 		case MV: /* 1000 */
@@ -236,7 +232,7 @@ static short assertFunct3(const Instruction *source) {
 		case ADDI: /* 000 */
 		case SLLI: /* 000 */
 			return 0;
-		case SW: /* 110 */
+		case SW:   /* 110 */
 		case BEQZ: /* 110 */
 			return 6;
 		case BNEZ: /* 111 */
@@ -258,7 +254,7 @@ static short assertFunct3(const Instruction *source) {
 static short assertFunct6(const Instruction *source) {
 	switch (assertCType(source)) {
 		case AND: /* 100011 */
-		case OR: /* 100011 */
+		case OR:  /* 100011 */
 		case XOR: /* 100011 */
 		case SUB: /* 100011 */
 			return 35;
@@ -272,16 +268,98 @@ static short assertFunct2(const Instruction *source) {
 	switch (assertCType(source)) {
 		case AND: /* 11 */
 			return 3;
-		case OR: /* 10 */
+		case OR:   /* 10 */
 		case ANDI: /* 10 */
 			return 2;
-		case XOR: /* 01 */
+		case XOR:  /* 01 */
 		case SRAI: /* 01 */
 			return 1;
-		case SUB: /* 00 */
+		case SUB:  /* 00 */
 		case SRLI: /* 00 */
 			return 0;
 		default: /* Some instructions don't have a Funct6 code */
+			return -1;
+	}
+}
+
+/* Return INT_MIN by default */
+static int assertImm(const Instruction *source) {
+	switch (assertCType(source)) {
+		case LI:
+		case ADDI:
+		case SLLI:
+		case SRLI:
+		case SRAI:
+		case ANDI:
+			return parseNumber(source->imm);
+		case LW:
+		case SW:
+			return parseNumber(source->imm >> 2);
+		case LUI:
+			return parseNumber(source->imm >> 12);
+		case BEQZ:
+		case BNEZ:
+		case J:
+		case JAL:
+			return parseNumber(source->imm >> 1);
+		default:
+			return INT_MIN;
+	}
+}
+
+/* Return -1 by default */
+static short assertRd(const Instruction *source) {
+	switch (assertCType(source)) {
+		case ADD:
+		case MV:
+		case JR:
+		case JALR:
+		case LI:
+		case LUI:
+		case ADDI:
+		case SLLI:
+			return source->rd;
+		case LW:
+		case AND:
+		case OR:
+		case XOR:
+		case SUB:
+		case BEQZ:
+		case BNEZ:
+		case SRLI:
+		case SRAI:
+		case ANDI:
+			return compressRegister(source->rd);
+		default:
+			return -1;
+	}
+}
+
+/* Return -1 by default */
+static short assertRs1(const Instruction *source) {
+	switch (assertCType(source)) {
+		case LW:
+		case SW:
+			return compressRegister(source->rs1);
+		default:
+			return -1;
+	}
+}
+
+/* Return -1 by default */
+static short assertRs2(const Instruction *source) {
+	switch (assertCType(source)) {
+		case ADD:
+		case MV:
+			return source->rs2;
+		case LW:
+		case SW:
+		case AND:
+		case OR:
+		case XOR:
+		case SUB:
+			return compressRegister(source->rs2);
+		default:
 			return -1;
 	}
 }
@@ -316,10 +394,16 @@ Compressed **primaryCompression(const Instruction **source) {
 			target[i]->funct6 = assertFunct6(source[i]);
 			/* 13. Funct2 code */
 			target[i]->funct2 = assertFunct2(source[i]);
-			/* TODO: imm rd rs1 rs2 */
+			/* 14. imm field */
+			target[i]->imm = assertImm(source[i]);
+			/* 15. rd, aka rd/rs1 */
+			target[i]->rd = assertRd(source[i]);
+			/* 16. rs1 */
+			target[i]->rs1 = assertRs1(source[i]);
+			/* 17. rs2 */
+			target[i]->rs2 = assertRs2(source[i]);
 		}
 	}
-
-
+	/* 18. Return object */
 	return target;
 }
