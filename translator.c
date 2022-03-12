@@ -58,6 +58,7 @@ int translate(const char *in, const char *out) {
 			Compressed **compressed = primaryCompression((const Instruction **) originalFile);
 			confirmAddress(originalFile, compressed);
 			writeToFile(output, originalFile, compressed);
+			clearAll(originalFile, compressed);
 		}
 		/* Done testing */
 		close_files(&input, &output);

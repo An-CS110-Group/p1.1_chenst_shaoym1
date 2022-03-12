@@ -386,12 +386,13 @@ static short assertRs2(const Instruction *source) {
 
 Compressed **primaryCompression(const Instruction **source) {
 	Compressed **target;
+	int i; /* Auxiliary vars */
 	/* 1. Check validation */
 	if (source == NULL) { return NULL; }
 	/* 2. Allocate space for pointers */
 	target = malloc(sizeof(Compressed *) * 60);
+	for (i = 0; i < 60; ++i) { target[i] = NULL; }
 	{
-		int i;
 		/* 3. Loop through all instructions */
 		for (i = 0; i < 60; ++i) {
 			/* 4. The end of all instructions */

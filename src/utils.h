@@ -223,4 +223,6 @@ Instruction **readFromFile(FILE *in);
  */
 int writeToFile(FILE *out, Instruction **original, Compressed **compressed);
 
+void clearAll(Instruction **pInstruction, Compressed **pCompressed);
+
 #endif

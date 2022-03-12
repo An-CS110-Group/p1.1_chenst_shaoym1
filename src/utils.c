@@ -247,8 +247,9 @@ Instruction **readFromFile(FILE *in) {
 	int i;
 	/* 14.1 Allocate spce for pointers */
 	Instruction **target = malloc(sizeof(Instruction *) * 60);
-	/* 14.2 Read in all data with a single loop */
 	unsigned long *num = malloc(sizeof(unsigned long));
+	for (i = 0; i < 60; ++i) { target[i] = NULL; }
+	/* 14.2 Read in all data with a single loop */
 	for (i = 0; i < 60; ++i) {
 		Instruction *temp = malloc(sizeof(Instruction));
 		/* 14.3 readline() has non-zero return value if something unusual happens */
@@ -390,4 +391,14 @@ int writeToFile(FILE *out, Instruction **original, Compressed **compressed) {
 	/* 15.6 We should not reach here */
 	printf("Reached the end of array!\n");
 	return 0;
+}
+
+void clearAll(Instruction **pInstruction, Compressed **pCompressed) {
+	int i;
+	for (i = 0; i < 60; ++i) {
+		if (pInstruction[i]) free(pInstruction[i]);
+		if (pCompressed[i]) free(pCompressed[i]);
+	}
+	free(pInstruction);
+	free(pCompressed);
 }
