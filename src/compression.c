@@ -1,3 +1,4 @@
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -85,21 +86,21 @@ static Ctype checkI(const Instruction *source) {
 					else if ((source->rd == source->rs1) && (source->rd != 0x0) && (source->imm != 0x0))
 						return ADDI;
 					return NON;
-				case 0x1: /*6.c.slli */
+				case 0x1: /*6. c.slli */
 					if (((source->rd == source->rs1) && (source->rd != 0x0)) && (source->imm == 0x0)) { return SLLI; }
 					return NON;
-
-
 				case 0x5:
 					if (source->funct7 == 0x0) {
+						/* c.srli */
 						if ((compressRegister(source->rd) != -1) && (source->rs1 == source->rd) && (source->imm == 0)) { return SRLI; }
 						return NON;
 					} else if (source->funct7 == 0x20) {
+						/* c.srai */
 						if ((compressRegister(source->rd) != -1) && (source->rs1 == source->rd) && (source->imm == 0)) { return SRAI; }
 						return NON;
 					}
-
 				case 0x7:
+					/* c.andi */
 					if ((compressRegister(source->rd) != -1) && (source->rs1 == source->rd)) { return ANDI; }
 					return NON;
 			}
@@ -124,15 +125,12 @@ static Ctype checkSB(const Instruction *source) {
 				return NON;
 			}
 
-		case 0x1:/*bne*/
-			if ((source->rs2==  0x0 && compressRegister(source->rs1) != -1))
-				{
-					return BNEZ;
-				}
-				else{
-					return NON;
-				}
-
+		case 0x1: /*bne*/
+			if ((source->rs2 == 0x0 && compressRegister(source->rs1) != -1)) {
+				return BNEZ;
+			} else {
+				return NON;
+			}
 	}
 	return NON;
 }
@@ -145,21 +143,17 @@ static Ctype checkS(const Instruction *source) {
 	}
 }
 
-static Ctype checkUJ(const Instruction *source)
-{
-	if(source->rd==0x0)
-	{
+static Ctype checkUJ(const Instruction *source) {
+	if (source->rd == 0x0) {
 		return J;
-	}
-	else if(source->rd==0x1)
-	{
+	} else if (source->rd == 0x1) {
 		return JAL;
 	}
 	return NON;
 }
 
 
-Ctype getCType(const Instruction *source) {
+Ctype assertCType(const Instruction *source) {
 	/* 1. Check validation */
 	if (source == NULL) return NON;
 	/* 2. Cannot be compressed */
@@ -182,27 +176,150 @@ Ctype getCType(const Instruction *source) {
 	return NON;
 }
 
+/* Return -1 by default */
+static short assertOpcode(const Instruction *source) {
+	switch (assertCType(source)) {
+		case ADD:  /* CR-format */
+		case MV:   /* CR-format */
+		case JR:   /* CR-format */
+		case JALR: /* CR-format */
+		case SLLI: /* CI-format */
+			return 2;
+		case LI:   /* CI-format */
+		case LUI:  /* CI-format */
+		case ADDI: /* CI-format */
+		case AND:  /* CS-format */
+		case OR:   /* CS-format */
+		case XOR:  /* CS-format */
+		case SUB:  /* CS-format */
+		case BEQZ: /* CB-format */
+		case BNEZ: /* CB-format */
+		case SRLI: /* CB-format */
+		case SRAI: /* CB-format */
+		case ANDI: /* CB-format */
+		case J:    /* CJ-format */
+		case JAL:  /* CJ-format */
+			return 1;
+		case LW: /* CL-format */
+		case SW: /* CS-format */
+			return 0;
+		default:
+			/* NON, such case should not exist! */
+			printf("Cannot assert opcode!");
+			return -1;
+	}
+}
+
+/* Return -1 by default */
+static short assertFunct4(const Instruction *source) {
+	/* Only CR-format compressed instruction has Funct4 code */
+	switch (assertCType(source)) {
+		case ADD: /* 1001 */
+		case JALR: /* 1001 */
+			return 9;
+		case MV: /* 1000 */
+		case JR: /* 1000 */
+			return 8;
+		default: /* Other type of compressed instruction */
+			return -1;
+	}
+}
+
+/* Return -1 by default */
+static short assertFunct3(const Instruction *source) {
+	switch (assertCType(source)) {
+		case LI: /* 010 */
+		case LW: /* 010 */
+			return 2;
+		case LUI: /* 011 */
+			return 3;
+		case ADDI: /* 000 */
+		case SLLI: /* 000 */
+			return 0;
+		case SW: /* 110 */
+		case BEQZ: /* 110 */
+			return 6;
+		case BNEZ: /* 111 */
+			return 7;
+		case SRLI: /* 100 */
+		case SRAI: /* 100 */
+		case ANDI: /* 100 */
+			return 4;
+		case JAL: /* 001 */
+			return 1;
+		case J: /* 101 */
+			return 5;
+		default: /* Some instructions don't have a Funct3 code */
+			return -1;
+	}
+}
+
+/* Return -1 by default */
+static short assertFunct6(const Instruction *source) {
+	switch (assertCType(source)) {
+		case AND: /* 100011 */
+		case OR: /* 100011 */
+		case XOR: /* 100011 */
+		case SUB: /* 100011 */
+			return 35;
+		default: /* Some instructions don't have a Funct6 code */
+			return -1;
+	}
+}
+
+/* Return -1 by default */
+static short assertFunct2(const Instruction *source) {
+	switch (assertCType(source)) {
+		case AND: /* 11 */
+			return 3;
+		case OR: /* 10 */
+		case ANDI: /* 10 */
+			return 2;
+		case XOR: /* 01 */
+		case SRAI: /* 01 */
+			return 1;
+		case SUB: /* 00 */
+		case SRLI: /* 00 */
+			return 0;
+		default: /* Some instructions don't have a Funct6 code */
+			return -1;
+	}
+}
+
 Compressed **primaryCompression(const Instruction **source) {
 	Compressed **target;
 	/* 1. Check validation */
 	if (source == NULL) { return NULL; }
-	/* 2. Allocate spce for pointers */
+	/* 2. Allocate space for pointers */
 	target = malloc(sizeof(Compressed *) * 60);
-	/* 3. Loop through all instructions */
 	{
 		int i;
+		/* 3. Loop through all instructions */
 		for (i = 0; i < 60; ++i) {
+			/* 4. The end of all instructions */
 			if (source[i] == NULL) break;
-
+			/* 5. Impossible to compress */
+			if (source[i]->inCompressAbleList) continue;
+			/* 6. Can compress or not */
+			if (assertCType(source[i]) == NON) continue;
+			/* 7. Allocate space for compressed instruction */
 			target[i] = malloc(sizeof(Compressed));
+			/* 8. CType */
+			target[i]->type = assertCType(source[i]);
+			/* 9. opcode(compressed version) */
+			target[i]->opcode = assertOpcode(source[i]);
+			/* 10. Funct4 code */
+			target[i]->funct4 = assertFunct4(source[i]);
+			/* 11. Funct3 code */
+			target[i]->funct3 = assertFunct3(source[i]);
+			/* 12. Funct6 code */
+			target[i]->funct6 = assertFunct6(source[i]);
+			/* 13. Funct2 code */
+			target[i]->funct2 = assertFunct2(source[i]);
+			/* TODO: imm rd rs1 rs2 */
 		}
 	}
 
 
 	return target;
 }
-
-
-/*before we get certain Ctype and stored it in the Struct Compressed(which contains paticular compressed binary and related opcode ,type ...section),
-we should first check whether "soure" is valid .since the instruction sets' constranit problem are left behind,we need to compensate for it .we see that
-R,SB,S,CJ cant cause ambigous,so just neglect their constrants line ,but notice they have other limitations*/
