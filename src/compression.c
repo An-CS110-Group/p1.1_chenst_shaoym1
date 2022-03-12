@@ -6,6 +6,11 @@
 #include "compression.h"
 #include "utils.h"
 
+static int powerOfTwo(int num) {
+	/* Returns 2^(num) */
+	return 1 << (num);
+}
+
 static short compressRegister(const short reg) {
 	/* 1. Check whether it can be compressed */
 	if ((reg >> 3) == 1) return -1;
@@ -73,14 +78,20 @@ static Ctype checkI(const Instruction *source) {
 			return NON;
 		case 0x03:
 			/* 4. c.lw */
-			if (compressRegister(source->rd) != -1 && compressRegister(source->rs1) != -1) return LW;
+			if (compressRegister(source->rd) != -1 && compressRegister(source->rs1) != -1 && (parseNumber(source->imm) >= 0) &&
+			    (parseNumber(source->imm) % 4 == 0) && (parseNumber(source->imm) <= powerOfTwo(7) - 1))
+				return LW;
 			return NON;
 		case 0x13:
 			switch (source->funct3) {
 				case 0x0:
-					/* 5. c.Li */
-					if (source->rd != 0 && source->rs1 == 0) return LI;
-					else if ((source->rd == source->rs1) && (source->rd != 0x0) && (source->imm != 0x0))
+					/* 5. c.li */
+					if (source->rd != 0 && source->rs1 == 0 && (parseNumber(source->imm) >= -1 * powerOfTwo(5)) &&
+					    (parseNumber(source->imm) <= powerOfTwo(5) - 1))
+						return LI;
+					/* c.addi */
+					else if ((source->rd == source->rs1) && (source->rd != 0x0) && (source->imm != 0x0) && (parseNumber(source->imm) >= -1 * powerOfTwo(5)) &&
+					         (parseNumber(source->imm) <= powerOfTwo(5) - 1))
 						return ADDI;
 					return NON;
 				case 0x1: /*6. c.slli */
@@ -98,7 +109,10 @@ static Ctype checkI(const Instruction *source) {
 					}
 				case 0x7:
 					/* c.andi */
-					if ((compressRegister(source->rd) != -1) && (source->rs1 == source->rd)) { return ANDI; }
+					if ((compressRegister(source->rd) != -1) && (source->rs1 == source->rd) && (parseNumber(source->imm) >= -1 * powerOfTwo(5)) &&
+					    (parseNumber(source->imm) <= powerOfTwo(5) - 1)) {
+						return ANDI;
+					}
 					return NON;
 			}
 	}
@@ -106,7 +120,8 @@ static Ctype checkI(const Instruction *source) {
 }
 
 static Ctype checkU(const Instruction *source) {
-	if ((source->rd != 0x0 && source->rd != 0x2) && (source->imm != 0x0)) {
+	if ((source->rd != 0x0 && source->rd != 0x2) && (source->imm != 0x0) && (parseNumber(source->imm >> 12) >= -1 * powerOfTwo(5)) &&
+	    (parseNumber(source->imm >> 12) <= powerOfTwo(5) - 1)) {
 		return LUI;
 	} else {
 		return NON;
@@ -116,14 +131,16 @@ static Ctype checkU(const Instruction *source) {
 static Ctype checkSB(const Instruction *source) {
 	switch (source->funct3) {
 		case 0x0: /*beq*/
-			if ((source->rs2 == 0x0 && compressRegister(source->rs1) != -1)) {
+			if ((source->rs2 == 0x0 && compressRegister(source->rs1) != -1) && (parseNumber(source->imm) % 2 == 0) &&
+			    (parseNumber(source->imm) >= -1 * powerOfTwo(8)) && (parseNumber(source->imm) <= powerOfTwo(8) - 1)) {
 				return BEQZ;
 			} else {
 				return NON;
 			}
 
 		case 0x1: /*bne*/
-			if ((source->rs2 == 0x0 && compressRegister(source->rs1) != -1)) {
+			if ((source->rs2 == 0x0 && compressRegister(source->rs1) != -1) && (parseNumber(source->imm) % 2 == 0) &&
+			    (parseNumber(source->imm) >= -1 * powerOfTwo(8)) && (parseNumber(source->imm) <= powerOfTwo(8) - 1)) {
 				return BNEZ;
 			} else {
 				return NON;
@@ -133,7 +150,8 @@ static Ctype checkSB(const Instruction *source) {
 }
 
 static Ctype checkS(const Instruction *source) {
-	if (compressRegister(source->rs1) != -1) {
+	if (compressRegister(source->rs1) != -1 && (parseNumber(source->imm) >= 0) && (parseNumber(source->imm) % 4 == 0) &&
+	    (parseNumber(source->imm) <= powerOfTwo(7) - 1)) {
 		return SW;
 	} else {
 		return NON;
@@ -141,9 +159,11 @@ static Ctype checkS(const Instruction *source) {
 }
 
 static Ctype checkUJ(const Instruction *source) {
-	if (source->rd == 0x0) {
+	if (source->rd == 0x0 && (parseNumber(source->imm) % 2 == 0) && (parseNumber(source->imm) >= -1 * powerOfTwo(11)) &&
+	    (parseNumber(source->imm) <= powerOfTwo(11) - 1)) {
 		return J;
-	} else if (source->rd == 0x1) {
+	} else if (source->rd == 0x1 && (parseNumber(source->imm) % 2 == 0) && (parseNumber(source->imm) >= -1 * powerOfTwo(11)) &&
+	    (parseNumber(source->imm) <= powerOfTwo(11) - 1)) {
 		return JAL;
 	}
 	return NON;

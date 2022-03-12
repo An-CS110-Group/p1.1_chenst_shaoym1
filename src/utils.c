@@ -338,6 +338,7 @@ static unsigned int generate16bit(Compressed *compressed) {
 			/* 15.23 This case should not happen */
 			printf("You shall not reach here!\n");
 	}
+	return 0;
 }
 
 int writeToFile(FILE *out, Instruction **original, Compressed **compressed) {
