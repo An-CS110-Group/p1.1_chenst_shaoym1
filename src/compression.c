@@ -13,9 +13,9 @@ static int powerOfTwo(const int num) {
 
 static short compressRegister(const short reg) {
 	/* 1. Check whether it can be compressed */
-	if ((reg >> 3) == 1) return -1;
+	if ((reg >> 3) != 1) return -1;
 	/* 2. Return the last 3 digits */
-	return (short) (reg & 0x8);
+	return (short) (reg & 0x7);
 }
 
 static int parseNumber(const unsigned long imm) {

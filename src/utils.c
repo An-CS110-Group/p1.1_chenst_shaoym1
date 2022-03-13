@@ -291,7 +291,7 @@ static unsigned int generate16bit(Compressed *compressed) {
 			        compressed->opcode);
 		case LUI:
 			/* 15.7 CI-format */
-			return ((compressed->funct3 << 13) | (((compressed->imm >> 17) & 0x1) << 12) | (compressed->rd << 7) | ((compressed->imm & 0xF00) << 2) |
+			return ((compressed->funct3 << 13) | (((compressed->imm >> 5) & 0x1) << 12) | (compressed->rd << 7) | ((compressed->imm & 0x1E) << 2) |
 			        compressed->opcode);
 
 		case ADDI:
@@ -305,12 +305,17 @@ static unsigned int generate16bit(Compressed *compressed) {
 
 		case LW:
 			/* 15.10 CL-format */
+			return ((compressed->funct3 << 13) | (((compressed->imm) & 0xE) >> 1 << 10) | (compressed->rs1 << 7) | ((compressed->imm & 0x1) << 6) |
+			        ((compressed->imm & 0x10) >> 4 << 6) | (compressed->rd << 2) | compressed->opcode);
 			return ((compressed->funct3 << 13) | (((compressed->imm) & 0x18) << 12) | (compressed->rs1 << 7) | ((compressed->imm & 0x2) << 3) |
 			        ((compressed->imm & 0x20) << 2) | compressed->opcode);
 
 		case SW:
-			return ((compressed->funct3 << 13) | (((compressed->imm) & 0x18) << 12) | (compressed->rs1 << 7) | ((compressed->imm & 0x2) << 3) |
-			        ((compressed->imm & 0x20) << 2) | compressed->opcode);
+			/* 15.11 CS-format-1 */
+			return ((compressed->funct3 << 13) | (((compressed->imm) & 0xE) >> 1 << 10) | (compressed->rs1 << 7) | ((compressed->imm & 0x1) << 6) |
+			        ((compressed->imm & 0x10) >> 4 << 6) | (compressed->rs2 << 2) | compressed->opcode);
+/*			return ((compressed->funct3 << 13) | (((compressed->imm) & 0x18) << 12) | (compressed->rs1 << 7) | ((compressed->imm & 0x2) << 3) |
+			        ((compressed->imm & 0x20) << 2) | compressed->opcode);*/
 
 		case AND:
 			/* 15.12 CS-format-2 */
