@@ -490,8 +490,9 @@ static int parseNumber20(const unsigned long imm) {
 
 void confirmAddress(Instruction **origin, Compressed **compressed) {
 	/* 1. Original value */
-	int i, imm = 0, new = 0;
+	int i, imm = 0;
 	for (i = 0; i < 60; ++i) {
+		int new = 0;
 		if (origin[i] == NULL) break;
 		/* 2. Some instructions don't need to be updated */
 		if (!addressNeedsUpdate(origin[i])) continue;
