@@ -358,8 +358,6 @@ static short assertRd(const Instruction *source) {
 		case OR: /* Return the compressed value */
 		case XOR: /* Return the compressed value */
 		case SUB: /* Return the compressed value */
-		case BEQZ: /* Return the compressed value */
-		case BNEZ: /* Return the compressed value */
 		case SRLI: /* Return the compressed value */
 		case SRAI: /* Return the compressed value */
 		case ANDI: /* Return the compressed value */

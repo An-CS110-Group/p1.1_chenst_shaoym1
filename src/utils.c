@@ -210,7 +210,7 @@ static unsigned long getImm(unsigned long instruction) {
 			return (((instruction >> 25) << 5) | ((instruction >> 7) & 0x1F));
 		case SB:
 			/* 12.5 Imm lies in 31 ~ 25 and 11 ~ 7 in an SB-type instruction */
-			return (((instruction >> 31) << 12) | ((instruction & 0x80) << 4) | ((instruction & 0x7E000000) >> 20) | ((instruction & 0xF00) >> 7));
+			return (((instruction >> 31) << 12) | ((instruction & 0x80) >> 7 << 11) | ((instruction & 0x7E000000) >> 20) | ((instruction & 0xF00) >> 7));
 		case U:
 			/* 12.6 Imm lies in 31 ~ 12 in a U-type instruction */
 			return ((instruction >> 12) << 12);
