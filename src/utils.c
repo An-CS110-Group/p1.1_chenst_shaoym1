@@ -84,6 +84,7 @@ static int isInCompressAbleList(unsigned long instruction) {
 			}
 			break;
 		case 0x13:
+			/* When opcode equals to 19 */
 			switch (getFunct3(instruction)) {
 				case 0x0:
 					/* 7.4 addi */
@@ -152,7 +153,7 @@ static InsType getType(unsigned long instruction) {
 			/* 8.2 I-type */
 		case 0x67:
 		case 0x73:
-		case 0x03:
+		case 0x03: /* I-type instructions are all listed here */
 		case 0x13:
 		case 0x1B:
 			return I;
@@ -396,11 +397,12 @@ int writeToFile(FILE *out, Instruction **original, Compressed **compressed) {
 
 void clearAll(Instruction **pInstruction, Compressed **pCompressed) {
 	int i;
+	/* 16.1 This function is aimed to avoid any possible mem-leaks */
 	for (i = 0; i < 60; ++i) {
 		if (pInstruction[i]) free(pInstruction[i]);
 		if (pCompressed[i]) free(pCompressed[i]);
 	}
-
+	/* 16.2 Don't forget to free the space taken by structures */
 	free(pInstruction);
 	free(pCompressed);
 }

@@ -82,6 +82,7 @@ static Ctype checkI(const Instruction *source) {
 			    (parseNumber(source->imm) % 4 == 0) && (parseNumber(source->imm) <= powerOfTwo(7) - 1))
 				return LW;
 			return NON;
+			/* Things are tough when coming to immediate values */
 		case 0x13:
 			switch (source->funct3) {
 				case 0x0:
@@ -116,14 +117,17 @@ static Ctype checkI(const Instruction *source) {
 					return NON;
 			}
 	}
+	/* Basically return NON to avoid returning nothing */
 	return NON;
 }
 
 static Ctype checkU(const Instruction *source) {
+	/* The function check if the source can be compressed into LUI type */
 	if ((source->rd != 0x0 && source->rd != 0x2) && (source->imm != 0x0) && (parseNumber(source->imm >> 12) >= -1 * powerOfTwo(5)) &&
 	    (parseNumber(source->imm >> 12) <= powerOfTwo(5) - 1)) {
 		return LUI;
 	} else {
+		/* Return NON by default */
 		return NON;
 	}
 }
@@ -135,6 +139,7 @@ static Ctype checkSB(const Instruction *source) {
 			    (parseNumber(source->imm) >= -1 * powerOfTwo(8)) && (parseNumber(source->imm) <= powerOfTwo(8) - 1)) {
 				return BEQZ;
 			} else {
+				/* Return NON by default */
 				return NON;
 			}
 
@@ -143,29 +148,36 @@ static Ctype checkSB(const Instruction *source) {
 			    (parseNumber(source->imm) >= -1 * powerOfTwo(8)) && (parseNumber(source->imm) <= powerOfTwo(8) - 1)) {
 				return BNEZ;
 			} else {
+				/* Return NON by default */
 				return NON;
 			}
 	}
+	/* Return NON by default */
 	return NON;
 }
 
 static Ctype checkS(const Instruction *source) {
+	/* The function check if the source can be compressed into SW type */
 	if (compressRegister(source->rs1) != -1 && (parseNumber(source->imm) >= 0) && (parseNumber(source->imm) % 4 == 0) &&
 	    (parseNumber(source->imm) <= powerOfTwo(7) - 1)) {
 		return SW;
 	} else {
+		/* Return NON by default */
 		return NON;
 	}
 }
 
 static Ctype checkUJ(const Instruction *source) {
+	/* The function check if the source can be compressed into J / JAL type */
 	if (source->rd == 0x0 && (parseNumber(source->imm) % 2 == 0) && (parseNumber(source->imm) >= -1 * powerOfTwo(11)) &&
 	    (parseNumber(source->imm) <= powerOfTwo(11) - 1)) {
 		return J;
+		/* JAL */
 	} else if (source->rd == 0x1 && (parseNumber(source->imm) % 2 == 0) && (parseNumber(source->imm) >= -1 * powerOfTwo(11)) &&
 	           (parseNumber(source->imm) <= powerOfTwo(11) - 1)) {
 		return JAL;
 	}
+	/* Return NON by default */
 	return NON;
 }
 
@@ -178,17 +190,18 @@ static Ctype assertCType(const Instruction *source) {
 	switch (source->type) {
 		case R:
 			return checkR(source);
-		case I:
+		case I: /* We should design a function for every type of instruction */
 			return checkI(source);
 		case U:
 			return checkU(source);
-		case S:
+		case S: /* We should design a function for every type of instruction */
 			return checkS(source);
 		case SB:
 			return checkSB(source);
-		case UJ:
+		case UJ: /* We should design a function for every type of instruction */
 			return checkUJ(source);
 	}
+	/* Return NON by default */
 	return NON;
 }
 
@@ -305,24 +318,24 @@ static short assertFunct2(const Instruction *source) {
 /* Return INT_MIN by default */
 static int assertImm(const Instruction *source) {
 	switch (assertCType(source)) {
-		case LI:
-		case ADDI:
-		case SLLI:
-		case SRLI:
-		case SRAI:
-		case ANDI:
+		case LI: /* This case has sign-extended number */
+		case ADDI: /* This case has sign-extended number */
+		case SLLI: /* This case has sign-extended number */
+		case SRLI: /* This case has sign-extended number */
+		case SRAI: /* This case has sign-extended number */
+		case ANDI: /* This case has sign-extended number */
 			return parseNumber(source->imm);
 		case LW:
 		case SW:
 			return parseNumber(source->imm >> 2);
-		case LUI:
+		case LUI: /* This case has sign-extended number */
 			return parseNumber(source->imm >> 12);
-		case BEQZ:
-		case BNEZ:
-		case J:
-		case JAL:
+		case BEQZ: /* This case has sign-extended number */
+		case BNEZ: /* This case has sign-extended number */
+		case J: /* This case has sign-extended number */
+		case JAL: /* This case has sign-extended number */
 			return parseNumber(source->imm >> 1);
-		default:
+		default: /* Return INT_MIN on default */
 			return INT_MIN;
 	}
 }
@@ -330,27 +343,27 @@ static int assertImm(const Instruction *source) {
 /* Return -1 by default */
 static short assertRd(const Instruction *source) {
 	switch (assertCType(source)) {
-		case ADD:
-		case MV:
-		case JR:
-		case JALR:
-		case LI:
-		case LUI:
-		case ADDI:
-		case SLLI:
+		case ADD: /* Return the original value */
+		case MV: /* Return the original value */
+		case JR: /* Return the original value */
+		case JALR: /* Return the original value */
+		case LI: /* Return the original value */
+		case LUI: /* Return the original value */
+		case ADDI: /* Return the original value */
+		case SLLI: /* Return the original value */
 			return source->rd;
-		case LW:
-		case AND:
-		case OR:
-		case XOR:
-		case SUB:
-		case BEQZ:
-		case BNEZ:
-		case SRLI:
-		case SRAI:
-		case ANDI:
+		case LW: /* Return the compressed value */
+		case AND: /* Return the compressed value */
+		case OR: /* Return the compressed value */
+		case XOR: /* Return the compressed value */
+		case SUB: /* Return the compressed value */
+		case BEQZ: /* Return the compressed value */
+		case BNEZ: /* Return the compressed value */
+		case SRLI: /* Return the compressed value */
+		case SRAI: /* Return the compressed value */
+		case ANDI: /* Return the compressed value */
 			return compressRegister(source->rd);
-		default:
+		default: /* Return -1 by default */
 			return -1;
 	}
 }
@@ -358,15 +371,15 @@ static short assertRd(const Instruction *source) {
 /* Return -1 by default */
 static short assertRs1(const Instruction *source) {
 	switch (assertCType(source)) {
-		case LW:
-		case SW:
-		case BNEZ:
-		case BEQZ:
+		case LW: /* Return the compressed value */
+		case SW: /* Return the compressed value */
+		case BNEZ: /* Return the compressed value */
+		case BEQZ: /* Return the compressed value */
 			return compressRegister(source->rs1);
-		case JR:
-		case JALR:
+		case JR: /* Return the original value */
+		case JALR: /* Return the original value */
 			return source->rs1;
-		default:
+		default: /* Return -1 by default */
 			return -1;
 	}
 }
@@ -374,17 +387,17 @@ static short assertRs1(const Instruction *source) {
 /* Return -1 by default */
 static short assertRs2(const Instruction *source) {
 	switch (assertCType(source)) {
-		case ADD:
-		case MV:
+		case ADD: /* Return the original value */
+		case MV: /* Return the original value */
 			return source->rs2;
-		case LW:
-		case SW:
-		case AND:
-		case OR:
-		case XOR:
-		case SUB:
+		case LW: /* Return the compressed value */
+		case SW: /* Return the compressed value */
+		case AND: /* Return the compressed value */
+		case OR: /* Return the compressed value */
+		case XOR: /* Return the compressed value */
+		case SUB: /* Return the compressed value */
 			return compressRegister(source->rs2);
-		default:
+		default: /* Return -1 by default */
 			return -1;
 	}
 }
@@ -492,32 +505,32 @@ void confirmAddress(Instruction **origin, Compressed **compressed) {
 		/* 4. Calculate new offsets */
 		if (imm > 0) {
 			int j = i;
-			while (imm != 0) {
+			while (imm != 0) { /* When we need to count toward the end of file */
 				imm -= 4;
 				++j;
-				new += compressed[j] == NULL ? 4 : 2;
+				new += compressed[j] == NULL ? 4 : 2; /* New address according to how many instructions are compressed */
 			}
-		} else if (imm < 0) {
+		} else if (imm < 0) { /* When we need to count toward the head of file */
 			int j = i;
 			while (imm != 0) {
 				imm += 4;
 				--j;
-				new -= compressed[j] == NULL ? 4 : 2;
+				new -= compressed[j] == NULL ? 4 : 2; /* New address according to how many instructions are compressed */
 			}
 		}
 		/* 5. Set the new offsets */
 		if (origin[i]->type == SB) {
 			if (compressed[i] == NULL) {
 				origin[i]->imm = new & 0x1FFF;
-				updateSBType(origin[i]);
+				updateSBType(origin[i]); /* Call SB-Type instruction */
 			} else {
 				compressed[i]->imm = new;
 			}
 
-		} else if (origin[i]->type == UJ) {
+		} else if (origin[i]->type == UJ) { /* Actually should be "other cases" here */
 			if (compressed[i] == NULL) {
 				origin[i]->imm = new & 0x1FFFFF;
-				updateUJType(origin[i]);
+				updateUJType(origin[i]); /* Call UJ-Type instruction */
 			} else {
 				compressed[i]->imm = new;
 			}
