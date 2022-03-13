@@ -95,16 +95,16 @@ static Ctype checkI(const Instruction *source) {
 						return ADDI;
 					return NON;
 				case 0x1: /*6. c.slli */
-					if (((source->rd == source->rs1) && (source->rd != 0x0)) && (source->imm == 0x0)) { return SLLI; }
+					if (((source->rd == source->rs1) && (source->rd != 0x0))) { return SLLI; }
 					return NON;
 				case 0x5:
 					if (source->funct7 == 0x0) {
 						/* c.srli */
-						if ((compressRegister(source->rd) != -1) && (source->rs1 == source->rd) && (source->imm == 0)) { return SRLI; }
+						if ((compressRegister(source->rd) != -1) && (source->rs1 == source->rd)) { return SRLI; }
 						return NON;
 					} else if (source->funct7 == 0x20) {
 						/* c.srai */
-						if ((compressRegister(source->rd) != -1) && (source->rs1 == source->rd) && (source->imm == 0)) { return SRAI; }
+						if ((compressRegister(source->rd) != -1) && (source->rs1 == source->rd)) { return SRAI; }
 						return NON;
 					}
 				case 0x7:
@@ -360,7 +360,12 @@ static short assertRs1(const Instruction *source) {
 	switch (assertCType(source)) {
 		case LW:
 		case SW:
+		case BNEZ:
+		case BEQZ:
 			return compressRegister(source->rs1);
+		case JR:
+		case JALR:
+			return source->rs1;
 		default:
 			return -1;
 	}
@@ -435,7 +440,7 @@ static void updateSBType(Instruction *toUpdate) {
 	/* 1. Duplicate original imm */
 	unsigned long duplicate = toUpdate->originalValue;
 	/* 2. Clean the imm field */
-	duplicate &= 0xFE000F80;
+	duplicate &= ~0xFE000F80;
 	/* 3. Add the new imm */
 	duplicate |= ((toUpdate->imm & (1 << 12)) >> 12 << 31);
 	duplicate |= ((toUpdate->imm & 0x7E0) >> 5 << 25);
@@ -449,7 +454,7 @@ static void updateUJType(Instruction *toUpdate) {
 	/* 1. Duplicate original imm */
 	unsigned long duplicate = toUpdate->originalValue;
 	/* 2. Clean the imm field */
-	duplicate &= 0xFFFFF000;
+	duplicate &= ~0xFFFFF000;
 	/* 3. Add the new imm */
 	duplicate |= ((toUpdate->imm & (1 << 20)) >> 20 << 31);
 	duplicate |= ((toUpdate->imm & 0x7FE) >> 1 << 21);
@@ -459,63 +464,63 @@ static void updateUJType(Instruction *toUpdate) {
 	toUpdate->originalValue = duplicate;
 }
 
+static int parseNumber20(const unsigned long imm) {
+	/* 1. This function decides whether a 20-bit number can fit into bits */
+	unsigned long a = (imm >> 19) & 1;
+	if (a == 1) {
+		/* 2. Two's complement for negative numbers */
+		return (int) -(~(imm - 1) & 0xFFFFF);
+	} else {
+		/* 3. Positive numbers */
+		return (int) imm;
+	}
+}
+
 void confirmAddress(Instruction **origin, Compressed **compressed) {
 	/* 1. Original value */
-	int i;
+	int i, imm = 0, new = 0;
 	for (i = 0; i < 60; ++i) {
 		if (origin[i] == NULL) break;
 		/* 2. Some instructions don't need to be updated */
 		if (!addressNeedsUpdate(origin[i])) continue;
-		if (compressed[i] == NULL && origin[i]->imm > 0) {
-			/* 3. Init vars */
-			unsigned long imm = origin[i]->imm;
-			int actual = 0;
-			int j = i + 1;
-			/* 4. loop to find new address */
+		/* 3. Get the jump offset */
+		if (origin[i]->type == SB) {
+			imm = parseNumber(origin[i]->imm >> 1) * 2;
+		} else if (origin[i]->type == UJ) {
+			imm = parseNumber20(origin[i]->imm);
+		}
+		/* 4. Calculate new offsets */
+		if (imm > 0) {
+			int j = i;
 			while (imm != 0) {
 				imm -= 4;
-				actual += compressed[j] == NULL ? 4 : 2;
+				++j;
+				new += compressed[j] == NULL ? 4 : 2;
 			}
-			/* 5. Fill in new addresses */
-			origin[i]->imm = actual;
-			origin[i]->type == SB ? updateSBType(origin[i]) : updateUJType(origin[i]);
-		} else if (compressed[i] == NULL && origin[i]->imm < 0) {
-			/* 6. Init vars */
-			unsigned long imm = origin[i]->imm;
-			int actual = 0;
-			int j = i - 1;
-			/* 7. loop to find new address */
+		} else if (imm < 0) {
+			int j = i;
 			while (imm != 0) {
 				imm += 4;
-				actual -= compressed[j] == NULL ? 4 : 2;
+				--j;
+				new -= compressed[j] == NULL ? 4 : 2;
 			}
-			/* 8. Fill in new addresses */
-			origin[i]->imm = actual;
-			origin[i]->type == SB ? updateSBType(origin[i]) : updateUJType(origin[i]);
-		} else if (compressed[i] != NULL && compressed[i]->imm > 0) {
-			/* 9. Init vars */
-			unsigned long imm = compressed[i]->imm;
-			int actual = 0;
-			int j = i + 1;
-			/* 10. loop to find new address */
-			while (imm != 0) {
-				imm -= 4;
-				actual += compressed[j] == NULL ? 4 : 2;
+		}
+		/* 5. Set the new offsets */
+		if (origin[i]->type == SB) {
+			if (compressed[i] == NULL) {
+				origin[i]->imm = new & 0x1FFF;
+				updateSBType(origin[i]);
+			} else {
+				compressed[i]->imm = new;
 			}
-			/* 11. Fill in new addresses */
-			compressed[i]->imm = actual;
-		} else if (compressed[i] != NULL & compressed[i]->imm < 0) {
-			/* 12. Init vars */
-			unsigned long imm = compressed[i]->imm;
-			int actual = 0;
-			int j = i - 1;
-			/* 13. loop to find new address */
-			while (imm != 0) {
-				imm += 4;
-				actual -= compressed[j] == NULL ? 4 : 2;
+
+		} else if (origin[i]->type == UJ) {
+			if (compressed[i] == NULL) {
+				origin[i]->imm = new & 0x1FFFFF;
+				updateUJType(origin[i]);
+			} else {
+				compressed[i]->imm = new;
 			}
-			/* 14. Fill in new addresses */
-			compressed[i]->imm = actual;
 		}
 	}
 }

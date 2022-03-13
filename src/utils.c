@@ -69,6 +69,7 @@ static short getFunct7(unsigned long instruction) {
 	return (short) ((instruction >> 25) & 0x7F);
 	/*func7 occupies 7 location*/
 }
+
 /*having examined this function all match*/
 static int isInCompressAbleList(unsigned long instruction) {
 	switch (getOpcode(instruction)) {
@@ -208,13 +209,13 @@ static unsigned long getImm(unsigned long instruction) {
 			return (((instruction >> 25) << 5) | ((instruction >> 7) & 0x1F));
 		case SB:
 			/* 12.5 Imm lies in 31 ~ 25 and 11 ~ 7 in an SB-type instruction */
-			return (((instruction >> 31) << 12) | ((instruction & 0x80) << 11) | ((instruction & 0x7E000000) >> 20) | ((instruction & 0xF00) >> 7));
+			return (((instruction >> 31) << 12) | ((instruction & 0x80) << 4) | ((instruction & 0x7E000000) >> 20) | ((instruction & 0xF00) >> 7));
 		case U:
 			/* 12.6 Imm lies in 31 ~ 12 in a U-type instruction */
 			return ((instruction >> 12) << 12);
 		case UJ:
 			/* 12.7 Imm lies in 31 ~ 12 in a U-type instruction */
-			return (((instruction & 0x80000000) >> 11) | (instruction & 0xFF000) | ((instruction & 0x100000) >> 9) | (instruction & 0x3FF00000) >> 19);
+			return (((instruction & 0x80000000) >> 11) | (((instruction >> 21) & 0x3FF) << 1) | (((instruction >> 20) & 1) << 11) | ((instruction >> 12) & 0xFF) << 12);
 	}
 }
 
@@ -280,10 +281,10 @@ static unsigned int generate16bit(Compressed *compressed) {
 			return ((compressed->funct4 << 12) | (compressed->rd << 7) | (compressed->rs2 << 2) | compressed->opcode);
 		case JR:
 			/* 15.4 CR-format */ /*check... perhaps (compressed->rs2 << 2) also work*/
-			return ((compressed->funct4 << 12) | (compressed->rd << 7) | (0x00000 << 2) | compressed->opcode);
+			return ((compressed->funct4 << 12) | (compressed->rs1 << 7) | (0x00000 << 2) | compressed->opcode);
 		case JALR:
 			/* 15.5 CR-format */
-			return ((compressed->funct4 << 12) | (compressed->rd << 7) | (0x00000 << 2) | compressed->opcode);
+			return ((compressed->funct4 << 12) | (compressed->rs1 << 7) | (0x00000 << 2) | compressed->opcode);
 			/*check... perhaps (compressed->rs2 << 2) also work*/
 		case LI:
 			/* 15.6 CI-format */
@@ -307,16 +308,11 @@ static unsigned int generate16bit(Compressed *compressed) {
 			/* 15.10 CL-format */
 			return ((compressed->funct3 << 13) | (((compressed->imm) & 0xE) >> 1 << 10) | (compressed->rs1 << 7) | ((compressed->imm & 0x1) << 6) |
 			        ((compressed->imm & 0x10) >> 4 << 6) | (compressed->rd << 2) | compressed->opcode);
-			return ((compressed->funct3 << 13) | (((compressed->imm) & 0x18) << 12) | (compressed->rs1 << 7) | ((compressed->imm & 0x2) << 3) |
-			        ((compressed->imm & 0x20) << 2) | compressed->opcode);
 
 		case SW:
 			/* 15.11 CS-format-1 */
 			return ((compressed->funct3 << 13) | (((compressed->imm) & 0xE) >> 1 << 10) | (compressed->rs1 << 7) | ((compressed->imm & 0x1) << 6) |
 			        ((compressed->imm & 0x10) >> 4 << 6) | (compressed->rs2 << 2) | compressed->opcode);
-/*			return ((compressed->funct3 << 13) | (((compressed->imm) & 0x18) << 12) | (compressed->rs1 << 7) | ((compressed->imm & 0x2) << 3) |
-			        ((compressed->imm & 0x20) << 2) | compressed->opcode);*/
-
 		case AND:
 			/* 15.12 CS-format-2 */
 			return ((compressed->funct6 << 10) | (compressed->rd << 7) | ((compressed->funct2) << 5) | ((compressed->rs2) << 2) | compressed->opcode);
@@ -335,27 +331,27 @@ static unsigned int generate16bit(Compressed *compressed) {
 
 		case BEQZ:
 			/* 15.16 CB-format-1 */
-			return ((compressed->funct6 << 13) | (compressed->imm & 0x100) << 12 | (compressed->imm & 0x18) << 13 | ((compressed->rs1) << 7) |
-			        (compressed->imm & 0xC0) << 5 | (compressed->imm & 0x6) << 3 | (compressed->imm & 0x20) << 2 | compressed->opcode);
+			return ((compressed->funct3 << 13) | ((compressed->imm & 0x100) >> 8 << 12) | (compressed->imm & 0x18) >> 3 << 10 | ((compressed->rs1) << 7) |
+			        (compressed->imm & 0xC0) >> 6 << 5 | (compressed->imm & 0x6) >> 1 << 3 | (compressed->imm & 0x20) >> 5 << 2 | compressed->opcode);
 
 		case BNEZ:
 			/* 15.17 CB-format-1 */
-			return ((compressed->funct6 << 13) | (compressed->imm & 0x100) << 12 | (compressed->imm & 0x18) << 13 | ((compressed->rs1) << 7) |
-			        (compressed->imm & 0xC0) << 5 | (compressed->imm & 0x6) << 3 | (compressed->imm & 0x20) << 2 | compressed->opcode);
+			return ((compressed->funct3 << 13) | ((compressed->imm & 0x100) >> 8 << 12) | (compressed->imm & 0x18) >> 3 << 10 | ((compressed->rs1) << 7) |
+			        (compressed->imm & 0xC0) >> 6 << 5 | (compressed->imm & 0x6) >> 1 << 3 | (compressed->imm & 0x20) >> 5 << 2 | compressed->opcode);
 
 		case SRLI:
 			/* 15.18 CB-format-2 */
-			return ((compressed->funct3 << 13) | (compressed->imm & 0x20) << 12 | (compressed->funct2) << 10 | ((compressed->rd) << 7) |
+			return ((compressed->funct3 << 13) | (compressed->imm & 0x20) >> 5 << 12 | (compressed->funct2) << 10 | ((compressed->rd) << 7) |
 			        (compressed->imm & 0x1F) << 2 | compressed->opcode);
 
 		case SRAI:
 			/* 15.19 CB-format-2 */
-			return ((compressed->funct3 << 13) | (compressed->imm & 0x20) << 12 | (compressed->funct2) << 10 | ((compressed->rd) << 7) |
+			return ((compressed->funct3 << 13) | (compressed->imm & 0x20) >> 5 << 12 | (compressed->funct2) << 10 | ((compressed->rd) << 7) |
 			        (compressed->imm & 0x1F) << 2 | compressed->opcode);
 
 		case ANDI:
 			/* 15.20 CB-format-2 */
-			return ((compressed->funct3 << 13) | (compressed->imm & 0x20) << 12 | (compressed->funct2) << 10 | ((compressed->rd) << 7) |
+			return ((compressed->funct3 << 13) | (compressed->imm & 0x20) >> 5 << 12 | (compressed->funct2) << 10 | ((compressed->rd) << 7) |
 			        (compressed->imm & 0x1F) << 2 | compressed->opcode);
 
 		case J:
@@ -404,6 +400,7 @@ void clearAll(Instruction **pInstruction, Compressed **pCompressed) {
 		if (pInstruction[i]) free(pInstruction[i]);
 		if (pCompressed[i]) free(pCompressed[i]);
 	}
+
 	free(pInstruction);
 	free(pCompressed);
 }
