@@ -16,7 +16,7 @@ static unsigned long stringToBinaryNumber(const char *instruction) {
 static int readline(FILE *in, unsigned long *returnValue) {
 	char temp[33];
 	/* 2.1 Check validation of input objects */
-	if (in == NULL | returnValue == NULL) { return 1; }
+	if (in == NULL || returnValue == NULL) { return 1; }
 
 	/* 2.2 Read in a line of original file and check if we've met the end */
 	if (fscanf(in, "%s", temp) == EOF) { return 2; }
@@ -218,6 +218,8 @@ static unsigned long getImm(unsigned long instruction) {
 			/* 12.7 Imm lies in 31 ~ 12 in a U-type instruction */
 			return (((instruction & 0x80000000) >> 11) | (((instruction >> 21) & 0x3FF) << 1) | (((instruction >> 20) & 1) << 11) | ((instruction >> 12) & 0xFF) << 12);
 	}
+	/* 12.8 Return NON by default */
+	return NON;
 }
 
 static void parse(unsigned long instruction, Instruction *target) {

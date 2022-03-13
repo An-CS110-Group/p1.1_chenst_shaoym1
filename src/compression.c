@@ -108,7 +108,7 @@ static Ctype checkI(const Instruction *source) {
 						/* c.srai */
 						if ((compressRegister(source->rd) != -1) && (source->rs1 == source->rd)) { return SRAI; }
 						return NON;
-					}
+					} else break;
 				case 0x7:
 					/* c.andi */
 					if ((compressRegister(source->rd) != -1) && (source->rs1 == source->rd) && (parseNumber(source->imm) >= -1 * powerOfTwo(5)) &&
