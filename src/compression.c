@@ -160,7 +160,7 @@ static Ctype checkSB(const Instruction *source) {
 static Ctype checkS(const Instruction *source) {
 	/* The function check if the source can be compressed into SW type */
 	if (compressRegister(source->rs1) != -1 && (parseNumber(source->imm) >= 0) && (parseNumber(source->imm) % 4 == 0) &&
-	    (parseNumber(source->imm) <= powerOfTwo(7) - 1)) {
+	    (parseNumber(source->imm) <= powerOfTwo(7) - 1) && compressRegister(source->rs1) != -1 && compressRegister(source->rs2) != -1) {
 		return SW;
 	} else {
 		/* Return NON by default */
