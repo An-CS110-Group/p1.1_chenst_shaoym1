@@ -508,7 +508,7 @@ void confirmAddress(Instruction **origin, Compressed **compressed) {
 			while (imm != 0) { /* When we need to count toward the end of file */
 				imm -= 4;
 				++j;
-				new += compressed[j] == NULL ? 4 : 2; /* New address according to how many instructions are compressed */
+				new += compressed[j - 1] == NULL ? 4 : 2; /* New address according to how many instructions are compressed */
 			}
 		} else if (imm < 0) { /* When we need to count toward the head of file */
 			int j = i;
