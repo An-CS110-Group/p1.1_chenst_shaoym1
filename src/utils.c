@@ -216,7 +216,8 @@ static unsigned long getImm(unsigned long instruction) {
 			return ((instruction >> 12) << 12);
 		case UJ:
 			/* 12.7 Imm lies in 31 ~ 12 in a U-type instruction */
-			return (((instruction & 0x80000000) >> 11) | (((instruction >> 21) & 0x3FF) << 1) | (((instruction >> 20) & 1) << 11) | ((instruction >> 12) & 0xFF) << 12);
+			return (((instruction & 0x80000000) >> 11) | (((instruction >> 21) & 0x3FF) << 1) | (((instruction >> 20) & 1) << 11) |
+			        ((instruction >> 12) & 0xFF) << 12);
 	}
 	/* 12.8 Return NON by default */
 	return NON;
@@ -359,15 +360,15 @@ static unsigned int generate16bit(Compressed *compressed) {
 
 		case J:
 			/* 15.21 CJ-format */
-			return ((compressed->funct3 << 13) | (compressed->imm & 800) << 12 | (compressed->imm & 0x10) << 11 | ((compressed->imm & 0x300) << 9) |
-			        (compressed->imm & 0x400) << 8 | (compressed->imm & 0x40) << 7 | (compressed->imm & 0x80) << 6 | (compressed->imm & 0xE) << 3 |
-			        (compressed->imm & 0x10) << 2 | compressed->opcode);
+			return ((compressed->funct3 << 13) | (compressed->imm & 0x800) >> 11 << 12 | (compressed->imm & 0x10) >> 4 << 11 | ((compressed->imm & 0x300) >> 8 << 9) |
+			        (compressed->imm & 0x400) >> 10 << 8 | (compressed->imm & 0x40) >> 6 << 7 | (compressed->imm & 0x80) >> 7 << 6 |
+			        (compressed->imm & 0xE) >> 1 << 3 | (compressed->imm & 0x20) >> 5 << 2 | compressed->opcode);
 
 		case JAL:
 			/* 15.22 CJ-format */
-			return ((compressed->funct3 << 13) | (compressed->imm & 800) << 12 | (compressed->imm & 0x10) << 11 | ((compressed->imm & 0x300) << 9) |
-			        (compressed->imm & 0x400) << 8 | (compressed->imm & 0x40) << 7 | (compressed->imm & 0x80) << 6 | (compressed->imm & 0xE) << 3 |
-			        (compressed->imm & 0x10) << 2 | compressed->opcode);
+			return ((compressed->funct3 << 13) | (compressed->imm & 0x800) >> 11 << 12 | (compressed->imm & 0x10) >> 4 << 11 | ((compressed->imm & 0x300) >> 8 << 9) |
+			        (compressed->imm & 0x400) >> 10 << 8 | (compressed->imm & 0x40) >> 6 << 7 | (compressed->imm & 0x80) >> 7 << 6 |
+			        (compressed->imm & 0xE) >> 1 << 3 | (compressed->imm & 0x20) >> 5 << 2 | compressed->opcode);
 
 		default:
 			/* 15.23 This case should not happen */
