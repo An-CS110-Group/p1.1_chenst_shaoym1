@@ -1,10 +1,11 @@
-#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "compression.h"
 #include "utils.h"
+
+#define INT_MIN -100000000
 
 static int powerOfTwo(const int num) {
 	/* Returns 2^(num) */
