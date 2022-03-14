@@ -170,11 +170,11 @@ static Ctype checkS(const Instruction *source) {
 
 static Ctype checkUJ(const Instruction *source) {
 	/* The function check if the source can be compressed into J / JAL type */
-	if (source->rd == 0x0 && (parseNumber(source->imm) % 2 == 0) && (parseNumber(source->imm) >= -1 * powerOfTwo(11)) &&
+	if (source->rd == 0x0 && (parseNumber(source->imm) >= -1 * powerOfTwo(11)) &&
 	    (parseNumber(source->imm) <= powerOfTwo(11) - 1)) {
 		return J;
 		/* JAL */
-	} else if (source->rd == 0x1 && (parseNumber(source->imm) % 2 == 0) && (parseNumber(source->imm) >= -1 * powerOfTwo(11)) &&
+	} else if (source->rd == 0x1 && (parseNumber(source->imm) >= -1 * powerOfTwo(11)) &&
 	           (parseNumber(source->imm) <= powerOfTwo(11) - 1)) {
 		return JAL;
 	}
