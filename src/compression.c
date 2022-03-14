@@ -5,7 +5,8 @@
 #include "compression.h"
 #include "utils.h"
 
-#define INT_MIN -100000000
+#define INT_MAX 2147483647
+#define INT_MIN (-INT_MAX - 1)
 
 static int powerOfTwo(const int num) {
 	/* Returns 2^(num) */
@@ -88,12 +89,12 @@ static Ctype checkI(const Instruction *source) {
 			switch (source->funct3) {
 				case 0x0:
 					/* 5. c.li */
-					if (source->rd != 0 && source->rs1 == 0 && (parseNumber(source->imm) >= -1 * powerOfTwo(4)) &&
-					    (parseNumber(source->imm) <= powerOfTwo(4) - 1))
+					if (source->rd != 0 && source->rs1 == 0 && (parseNumber(source->imm) >= -1 * powerOfTwo(5)) &&
+					    (parseNumber(source->imm) <= powerOfTwo(5) - 1))
 						return LI;
 					/* c.addi */
-					else if ((source->rd == source->rs1) && (source->rd != 0x0) && (source->imm != 0x0) && (parseNumber(source->imm) >= -1 * powerOfTwo(4)) &&
-					         (parseNumber(source->imm) <= powerOfTwo(4) - 1))
+					else if ((source->rd == source->rs1) && (source->rd != 0x0) && (source->imm != 0x0) && (parseNumber(source->imm) >= -1 * powerOfTwo(5)) &&
+					         (parseNumber(source->imm) <= powerOfTwo(5) - 1))
 						return ADDI;
 					return NON;
 				case 0x1: /*6. c.slli */
