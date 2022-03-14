@@ -88,12 +88,12 @@ static Ctype checkI(const Instruction *source) {
 			switch (source->funct3) {
 				case 0x0:
 					/* 5. c.li */
-					if (source->rd != 0 && source->rs1 == 0 && (parseNumber(source->imm) >= -1 * powerOfTwo(5)) &&
-					    (parseNumber(source->imm) <= powerOfTwo(5) - 1))
+					if (source->rd != 0 && source->rs1 == 0 && (parseNumber(source->imm) >= -1 * powerOfTwo(4)) &&
+					    (parseNumber(source->imm) <= powerOfTwo(4) - 1))
 						return LI;
 					/* c.addi */
-					else if ((source->rd == source->rs1) && (source->rd != 0x0) && (source->imm != 0x0) && (parseNumber(source->imm) >= -1 * powerOfTwo(5)) &&
-					         (parseNumber(source->imm) <= powerOfTwo(5) - 1))
+					else if ((source->rd == source->rs1) && (source->rd != 0x0) && (source->imm != 0x0) && (parseNumber(source->imm) >= -1 * powerOfTwo(4)) &&
+					         (parseNumber(source->imm) <= powerOfTwo(4) - 1))
 						return ADDI;
 					return NON;
 				case 0x1: /*6. c.slli */
@@ -170,11 +170,11 @@ static Ctype checkS(const Instruction *source) {
 
 static Ctype checkUJ(const Instruction *source) {
 	/* The function check if the source can be compressed into J / JAL type */
-	if (source->rd == 0x0 && (parseNumber(source->imm) >= -1 * powerOfTwo(11)) &&
+	if (source->rd == 0x0 && (parseNumber(source->imm) % 2 == 0) && (parseNumber(source->imm) >= -1 * powerOfTwo(11)) &&
 	    (parseNumber(source->imm) <= powerOfTwo(11) - 1)) {
 		return J;
 		/* JAL */
-	} else if (source->rd == 0x1 && (parseNumber(source->imm) >= -1 * powerOfTwo(11)) &&
+	} else if (source->rd == 0x1 && (parseNumber(source->imm) % 2 == 0) && (parseNumber(source->imm) >= -1 * powerOfTwo(11)) &&
 	           (parseNumber(source->imm) <= powerOfTwo(11) - 1)) {
 		return JAL;
 	}
