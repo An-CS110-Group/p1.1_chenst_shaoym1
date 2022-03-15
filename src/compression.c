@@ -476,6 +476,7 @@ static void updateUJType(Instruction *toUpdate) {
 	/* 4. Correct the new value */
 	toUpdate->originalValue = duplicate;
 }
+static void updateUJType(Instruction *toUpdate) 
 
 static int parseNumber20(const unsigned long imm) {
 	/* 1. This function decides whether a 20-bit number can fit into bits */
