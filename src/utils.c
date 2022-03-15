@@ -311,12 +311,12 @@ static unsigned int generate16bit(Compressed *compressed) {
 		case LW:
 			/* 15.10 CL-format */
 			return ((compressed->funct3 << 13) | (((compressed->imm) & 0xE) >> 1 << 10) | (compressed->rs1 << 7) | ((compressed->imm & 0x1) << 6) |
-			        ((compressed->imm & 0x10) >> 4 << 6) | (compressed->rd << 2) | compressed->opcode);
+			        ((compressed->imm & 0x10) >> 4 << 5) | (compressed->rd << 2) | compressed->opcode);
 
 		case SW:
 			/* 15.11 CS-format-1 */
 			return ((compressed->funct3 << 13) | (((compressed->imm) & 0xE) >> 1 << 10) | (compressed->rs1 << 7) | ((compressed->imm & 0x1) << 6) |
-			        ((compressed->imm & 0x10) >> 4 << 6) | (compressed->rs2 << 2) | compressed->opcode);
+			        ((compressed->imm & 0x10) >> 4 << 5) | (compressed->rs2 << 2) | compressed->opcode);
 		case AND:
 			/* 15.12 CS-format-2 */
 			return ((compressed->funct6 << 10) | (compressed->rd << 7) | ((compressed->funct2) << 5) | ((compressed->rs2) << 2) | compressed->opcode);
