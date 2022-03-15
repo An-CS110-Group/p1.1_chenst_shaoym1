@@ -491,15 +491,15 @@ static int parseNumber20(const unsigned long imm) {
 
 void confirmAddress(Instruction **origin, Compressed **compressed) {
 	/* 1. Original value */
-	int i, imm = 0;
+	int i;
 	for (i = 0; i < 60; ++i) {
-		int new = 0;
+		int new = 0, imm = 0;
 		if (origin[i] == NULL) break;
 		/* 2. Some instructions don't need to be updated */
 		if (!addressNeedsUpdate(origin[i])) continue;
 		/* 3. Get the jump offset */
 		if (origin[i]->type == SB) {
-			imm = parseNumber(origin[i]->imm >> 1) * 2;
+			imm = parseNumber(origin[i]->imm);
 		} else if (origin[i]->type == UJ) {
 			imm = parseNumber20(origin[i]->imm);
 		}
