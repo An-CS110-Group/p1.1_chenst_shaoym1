@@ -296,7 +296,7 @@ static unsigned int generate16bit(Compressed *compressed) {
 			        compressed->opcode);
 		case LUI:
 			/* 15.7 CI-format */
-			return ((compressed->funct3 << 13) | (((compressed->imm >> 5) & 0x1) << 12) | (compressed->rd << 7) | ((compressed->imm & 0x1E) << 2) |
+			return ((compressed->funct3 << 13) | (((compressed->imm >> 5) & 0x1) << 12) | (compressed->rd << 7) | ((compressed->imm & 0x1F) << 2) |
 			        compressed->opcode);
 
 		case ADDI:
