@@ -336,7 +336,7 @@ static int assertImm(const Instruction *source) {
 		case BNEZ: /* This case has sign-extended number */
 		case J: /* This case has sign-extended number */
 		case JAL: /* This case has sign-extended number */
-			return parseNumber(source->imm >> 1);
+			return parseNumber(source->imm >> 1) * 2;
 		default: /* Return INT_MIN on default */
 			return INT_MIN;
 	}
@@ -499,9 +499,9 @@ void confirmAddress(Instruction **origin, Compressed **compressed) {
 		if (!addressNeedsUpdate(origin[i])) continue;
 		/* 3. Get the jump offset */
 		if (origin[i]->type == SB) {
-			imm = parseNumber(origin[i]->imm);
+			imm = parseNumber(origin[i]->imm >> 1) * 2;
 		} else if (origin[i]->type == UJ) {
-			imm = parseNumber20(origin[i]->imm);
+			imm = parseNumber20(origin[i]->imm >> 1) * 2;
 		}
 		/* 4. Calculate new offsets */
 		if (imm > 0) {
